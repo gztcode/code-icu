@@ -1,0 +1,265 @@
+/* ==========================================================================
+   Code ICU · Design Tokens v1.0.0
+   与 design-tokens.json 一一对应。前端只允许引用本文件变量，禁止裸 hex。
+   例外：仅有 #fff / #000 可直接书写（本项目实际未使用 #000 于正文）。
+   分层：A1 身份 / A2 结构+语义 / B 插槽 / C 扩展
+   ========================================================================== */
+
+:root {
+  /* ---------- Primitive（仅供下方语义层引用，组件禁止直接用） ---------- */
+  --p-paper-50:  #FAFAF7;
+  --p-paper-100: #F4F3ED;
+  --p-paper-200: #EAE9E1;
+  --p-paper-300: #DCDBD1;
+  --p-paper-400: #C9C8BC;
+
+  --p-ink-900: #161815;
+  --p-ink-700: #2E332E;
+  --p-ink-500: #5C635B;
+  --p-ink-400: #6A7066;
+  --p-ink-300: #A8AEA4;
+
+  --p-vital-700: #067647;
+  --p-vital-600: #0B8F56;
+  --p-vital-500: #12B76A;
+  --p-vital-300: #6CE9A6;
+
+  --p-alarm-700: #9B1C1F;
+  --p-alarm-600: #C1272D;
+  --p-alarm-500: #E03B3B;
+  --p-alarm-50:  #FBEDEC;
+
+  --p-warn-700:  #A16207;
+  --p-steel-700: #2F6D8F;
+  --p-ember-600: #C2410C;
+
+  --p-monitor-900: #0E1613;
+  --p-monitor-800: #131E1A;
+  --p-monitor-700: #1E2B25;
+  --p-monitor-600: #2A3A32;
+  --p-monitor-trace: #3BF08C;
+
+  /* ---------- A1 · Surface & Foreground ---------- */
+  --bg:            var(--p-paper-50);
+  --surface:       #FFFFFF;
+  --fg:            var(--p-ink-900);
+  --muted:         var(--p-ink-500);
+  --border:        var(--p-paper-300);
+
+  /* ---------- B · Slot 别名 ---------- */
+  --surface-2:     var(--p-paper-100);
+  --surface-inset: var(--p-paper-200);
+  --fg-2:          var(--p-ink-700);
+  --meta:          var(--p-ink-400);
+  --border-soft:   var(--p-paper-200);
+  --border-dash:   var(--p-paper-400);
+
+  /* ---------- A1 · Accent（主色：监护绿） ---------- */
+  --accent:        var(--p-vital-700);
+  --accent-on:     #FFFFFF;
+  --accent-hover:  var(--p-vital-600);
+  --accent-soft:   #E7F4EC;
+
+  /* ---------- B · Action（填入式主按钮：墨黑） ---------- */
+  --action:        var(--p-ink-900);
+  --action-on:     var(--p-paper-50);
+  --action-hover:  var(--p-ink-700);
+  --action-active: #000000;
+
+  /* ---------- A2 · Semantic ---------- */
+  --success:       var(--p-vital-700);
+  --danger:        var(--p-alarm-600);
+  --warn:          var(--p-warn-700);
+  --alarm:         var(--p-alarm-600);
+  --alarm-deep:    var(--p-alarm-700);
+  --alarm-soft:    var(--p-alarm-50);
+  --focus-ring:    var(--p-vital-700);
+
+  /* ---------- C · 分诊等级色（0-100 五段） ---------- */
+  --level-healthy: var(--p-vital-700);
+  --level-clinic:  var(--p-steel-700);
+  --level-ward:    var(--p-warn-700);
+  --level-icu:     var(--p-ember-600);
+  --level-dead:    var(--p-alarm-600);
+
+  /* ---------- C · 监护屏 ---------- */
+  --monitor-bg:     var(--p-monitor-900);
+  --monitor-bg-2:   var(--p-monitor-800);
+  --monitor-grid:   var(--p-monitor-700);
+  --monitor-grid-2: var(--p-monitor-600);
+  --monitor-trace:  var(--p-monitor-trace);
+  --monitor-text:   #C8E6D6;
+  --monitor-muted:  #6E8C7C;
+  --monitor-alarm:  #FF6B5E;
+
+  /* ---------- C · 纸张纹理（唯一允许的"效果色"） ---------- */
+  --paper-rule:     rgba(22, 24, 21, 0.028);
+  --paper-rule-gap: 32px;
+
+  /* ---------- C · 印章 ---------- */
+  --stamp:         var(--p-alarm-600);
+  --stamp-opacity: 0.88;
+
+  /* ---------- Typography ---------- */
+  --font-display: "Archivo", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-body:    "Archivo", "PingFang SC", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono:    "Martian Mono", "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-serif-alt: "Songti SC", "Source Han Serif SC", "Noto Serif SC", serif;
+
+  --text-2xs: 10px;
+  --text-xs:  12px;
+  --text-sm:  13px;
+  --text-base:15px;
+  --text-md:  17px;
+  --text-lg:  20px;
+  --text-xl:  24px;
+  --text-2xl: 30px;
+  --text-3xl: 38px;
+  --text-4xl: 48px;
+  --text-5xl: 64px;
+
+  --leading-display: 1.05;
+  --leading-heading: 1.2;
+  --leading-body:    1.65;
+  --leading-mono:    1.15;
+
+  --weight-read:      400;
+  --weight-emphasize: 510;
+  --weight-announce:  590;
+
+  --tracking-display: -0.022em;
+  --tracking-heading: -0.012em;
+  --tracking-body:    0em;
+  --tracking-label:   0.12em;
+
+  /* ---------- Spacing（4px 基准） ---------- */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ---------- Radius（纸质表单：极克制的圆角） ---------- */
+  --radius-none: 0px;
+  --radius-xs:   2px;
+  --radius-sm:   3px;
+  --radius-md:   4px;
+  --radius-lg:   6px;
+  --radius-full: 9999px;
+
+  /* ---------- Elevation ---------- */
+  --elev-flat:   none;
+  --elev-paper:  0 1px 0 rgba(22,24,21,0.04), 0 2px 6px -3px rgba(22,24,21,0.10);
+  --elev-lift:   0 1px 0 rgba(22,24,21,0.05), 0 8px 12px -8px rgba(22,24,21,0.18);
+  --elev-poster: 0 2px 0 rgba(22,24,21,0.06), 0 24px 60px -28px rgba(22,24,21,0.32);
+
+  /* ---------- Motion ---------- */
+  --motion-instant: 80ms;
+  --motion-fast:    150ms;
+  --motion-base:    220ms;
+  --motion-slow:    320ms;
+  --motion-sweep:   3600ms;
+  --ease-standard:  cubic-bezier(0.2, 0, 0, 1);
+  --ease-out:       cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ---------- Layout ---------- */
+  --container-max:    1000px;
+  --container-narrow: 620px;
+  --gutter:           20px;
+  --section-y:        32px;
+  --touch-min:        44px;
+
+  /* ---------- Z ---------- */
+  --z-base:   0;
+  --z-sticky: 100;
+  --z-toast:  300;
+  --z-modal:  400;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter:    32px;
+    --section-y: 56px;
+    --text-5xl:  88px;
+    --text-4xl:  56px;
+  }
+}
+
+/* ==========================================================================
+   基础层：只在全局样式表使用一次
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  font-weight: var(--weight-read);
+  letter-spacing: var(--tracking-body);
+  /* 病历纸：极淡的横向格线，opacity 极低，仅提供"纸"的触感，不干扰阅读 */
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(var(--paper-rule-gap) - 1px),
+      var(--paper-rule) calc(var(--paper-rule-gap) - 1px),
+      var(--paper-rule) var(--paper-rule-gap)
+    );
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 数字读感：所有指标数字用等宽 + 表格数字 */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* 表单标签：全大写 + 宽字距 */
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-emphasize);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--meta);
+}
+
+/* 打印表单的分隔线 */
+.rule-dashed {
+  border: 0;
+  border-top: 1px dashed var(--border-dash);
+  margin: var(--space-4) 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

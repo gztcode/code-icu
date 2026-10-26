@@ -1,0 +1,116 @@
+/* ==========================================================================
+   Code ICU · app-notice.css
+   病危通知书：页面外壳 + 1080×1440 成品卡（DOM 版，坐标与 design-spec §10.2 一一对应）
+
+   【作用域纪律】除页面外壳（.notice / .notice-bar / .poster-box / .notice-foot …）外，
+   成品卡里的每一条选择器都必须以 `.poster` 打头。这些类名（.lede / .advice / .chip …）
+   与首页、报告页的通用组件同名，漏一个前缀就会把别的页面撑出横向滚动条 ——
+   本文件第一版就踩过：`.advice { width:880px }` 让报告页溢出 525px。
+   ========================================================================== */
+
+.notice { padding-top: var(--space-4); padding-bottom: var(--space-12); }
+.notice-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-3) 0 var(--space-4); border-bottom: 1px solid var(--border); }
+.notice-note { margin: 0; flex: 1 1 260px; font-size: var(--text-xs); color: var(--muted); line-height: 1.7; }
+.notice-note .num { color: var(--fg-2); }
+.notice-acts { display: flex; gap: var(--space-2); flex: 0 0 auto; }
+.notice-acts .btn { min-height: var(--touch-min); }
+.notice-missing { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-5); }
+.notice-foot { margin: var(--space-4) 0 0; font-size: var(--text-2xs); color: var(--meta); line-height: 1.7; }
+
+/* 预览窗：按容器宽度等比缩放整张卡，投到手机上就是一张缩略图 */
+.poster-box { position: relative; width: 100%; margin: var(--space-4) 0 0; aspect-ratio: 1080 / 1440; overflow: hidden; background: var(--surface-2); }
+.poster-box .poster { position: absolute; left: 0; top: 0; transform-origin: top left; }
+
+/* ---------- 成品卡本体 ---------- */
+.poster {
+  width: 1080px; height: 1440px; overflow: hidden;
+  background-color: var(--bg);
+  /* 病历纸的横向格线：40px 一档，与 Canvas 第 2 条绘制指令同参 */
+  background-image: repeating-linear-gradient(
+    to bottom, transparent 0, transparent 39px, var(--paper-rule) 39px, var(--paper-rule) 40px);
+  color: var(--fg);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+.poster > * { position: absolute; }
+
+.poster .frame { left: 36px; top: 36px; width: 1006px; height: 1366px; border: 1px solid var(--border); }
+
+/* 红头 */
+.poster .org { left: 76px; top: 64px; font-size: 24px; font-weight: 600; letter-spacing: 10px; color: var(--alarm); line-height: 1; }
+.poster .no { right: 76px; top: 70px; font-family: var(--font-mono); font-size: 13px; color: var(--meta); letter-spacing: 0.04em; line-height: 1; }
+.poster .rule1 { left: 76px; top: 104px; width: 928px; height: 3px; background: var(--alarm); }
+.poster .rule2 { left: 76px; top: 111px; width: 928px; height: 1px; background: var(--alarm); }
+
+/* 标题 */
+.poster .kicker { left: 0; width: 1080px; top: 146px; text-align: center; font-family: var(--font-mono); font-size: 12px; letter-spacing: 7px; color: var(--alarm); line-height: 1; }
+.poster .title { left: 0; width: 1080px; top: 182px; margin: 0; text-align: center; font-family: var(--font-serif-alt); font-size: 60px; font-weight: 500; letter-spacing: 20px; text-indent: 20px; line-height: 1; color: var(--fg); }
+.poster .lede { left: 76px; top: 266px; width: 928px; max-width: none; margin: 0; font-size: 17px; line-height: 1.5; color: var(--muted); }
+
+/* 患者信息表 */
+.poster .tbl { left: 76px; top: 310px; width: 928px; height: 164px; border: 1px solid var(--border); }
+.poster .tbl .vl { position: absolute; left: 464px; top: 0; width: 1px; height: 104px; border-left: 1px dashed var(--border-dash); }
+.poster .tbl .hl { position: absolute; left: 0; width: 928px; height: 1px; border-top: 1px dashed var(--border-dash); }
+.poster .tbl .hl1 { top: 52px; }
+.poster .tbl .hl2 { top: 104px; }
+.poster .cell { position: absolute; }
+.poster .ck { display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--meta); line-height: 1; }
+.poster .cv { display: block; font-size: 18px; line-height: 1.2; color: var(--fg); margin-top: 8px; }
+.poster .cv.mono { font-family: var(--font-mono); font-size: 17px; letter-spacing: 0; }
+
+/* 健康分 */
+.poster .lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--meta); line-height: 1; }
+.poster .lbl-score { left: 76px; top: 490px; }
+.poster .lbl-vitals { left: 500px; top: 490px; }
+.poster .lbl-concl { left: 76px; top: 878px; }
+.poster .lbl-remarks { left: 76px; top: 1116px; }
+.poster .score { left: 76px; top: 512px; font-family: var(--font-mono); font-size: 160px; font-weight: 700; line-height: 0.94; letter-spacing: -6px; color: var(--fg); }
+.poster .den { left: 292px; top: 638px; font-family: var(--font-mono); font-size: 20px; color: var(--meta); line-height: 1; }
+.poster .chip { left: 76px; top: 706px; display: block; width: 172px; height: 38px; padding: 0; line-height: 36px; text-align: center; font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 2px; border: 1.5px solid currentColor; border-radius: 2px; }
+
+/* 六项体征 */
+.poster .vrow { left: 500px; width: 504px; height: 44px; }
+.poster .vn { position: absolute; left: 0; top: 14px; font-size: 15px; line-height: 1; color: var(--fg); }
+.poster .vtrack { position: absolute; left: 150px; top: 19px; width: 250px; height: 5px; background: var(--surface-inset); }
+.poster .vfill { position: absolute; left: 150px; top: 19px; height: 5px; }
+.poster .vs { position: absolute; right: 0; top: 12px; width: 60px; text-align: right; font-family: var(--font-mono); font-size: 14px; line-height: 1; color: var(--fg-2); }
+/* 「样本不足」是四个汉字，等宽数字位放不下，单独放宽并改用正文体，别挤成一坨 */
+.poster .vs.is-note { width: 84px; font-family: var(--font-body); font-size: 12px; letter-spacing: 0.02em; color: var(--meta); }
+
+/* 监护条 */
+.poster .strip { left: 76px; top: 800px; width: 928px; height: 58px; background: var(--monitor-bg); overflow: hidden; }
+.poster .strip svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.poster .strip path { fill: none; stroke: var(--monitor-trace); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.poster .strip .rd { position: absolute; right: 12px; top: 8px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--monitor-alarm); line-height: 1; }
+
+/* 结论与治疗 */
+.poster .concl { left: 76px; top: 898px; width: 928px; font-family: var(--font-display); font-size: 32px; line-height: 1.5; letter-spacing: -0.01em; color: var(--fg); font-weight: 510; }
+.poster .advice { left: 76px; top: 1018px; width: 880px; margin: 0; font-size: 17px; line-height: 1.6; color: var(--muted); }
+
+/* 落款 */
+.poster .sign { right: 76px; text-align: right; }
+.poster .sign .k { display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--meta); line-height: 1; }
+.poster .sign .v { display: block; font-size: 17px; line-height: 1.3; color: var(--fg-2); margin-top: 6px; }
+.poster .s1 { top: 1116px; }
+.poster .s2 { top: 1166px; }
+
+/* 备注 */
+.poster .remarks { left: 76px; top: 1140px; width: 520px; font-size: 15px; line-height: 1.6; color: var(--muted); }
+
+/* 印章（HTML 有 textPath，所以能直接沿弧排字；Canvas 走 stamp.js 的逐字旋转） */
+.poster .stampbox { left: 606px; top: 1042px; width: 180px; height: 180px; transform: rotate(-9deg); mix-blend-mode: multiply; opacity: 0.9; }
+.poster .stamp-ring { stroke: var(--stamp); }
+.poster .stamp-star { fill: var(--stamp); }
+.poster .stamp-top, .poster .stamp-bot { fill: var(--stamp); font-family: var(--font-display); }
+.poster .stamp-top { font-size: 25px; font-weight: 600; letter-spacing: 6px; }
+.poster .stamp-bot { font-size: 15px; font-weight: 500; letter-spacing: 3px; }
+
+/* 页脚 */
+.poster .foot-rule { left: 76px; top: 1300px; width: 928px; height: 1px; border-top: 1px dashed var(--border-dash); }
+.poster .foot1 { left: 76px; top: 1322px; width: 928px; font-size: 12px; line-height: 1.5; color: var(--meta); }
+.poster .foot2 { left: 76px; top: 1348px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--meta); line-height: 1.4; }
+
+@media (min-width: 768px) {
+  .notice-bar { padding: var(--space-4) 0 var(--space-5); }
+  .notice-note { font-size: var(--text-sm); }
+}

@@ -1,0 +1,201 @@
+{
+  "$meta": {
+    "project": "Code ICU",
+    "version": "1.0.0",
+    "designer": "颜好看",
+    "register": "product",
+    "axes": { "designVariance": 6, "motionIntensity": 5, "visualDensity": 6 },
+    "iconLibrary": "lucide@0.460.0",
+    "theme": "light-only (paper)",
+    "note": "全部颜色以语义命名。Primitive 层只给语义层用，组件层禁止直接用 primitive。"
+  },
+
+  "primitive": {
+    "paper": {
+      "50":  { "value": "#FAFAF7", "type": "color", "desc": "病历纸底" },
+      "100": { "value": "#F4F3ED", "type": "color", "desc": "次级纸面/表头底" },
+      "200": { "value": "#EAE9E1", "type": "color", "desc": "凹陷/条纹" },
+      "300": { "value": "#DCDBD1", "type": "color", "desc": "实线边框" },
+      "400": { "value": "#C9C8BC", "type": "color", "desc": "虚线/表格线" }
+    },
+    "ink": {
+      "900": { "value": "#161815", "type": "color", "desc": "墨色主文本（带绿调的近黑，非纯黑）" },
+      "700": { "value": "#2E332E", "type": "color", "desc": "次强文本" },
+      "500": { "value": "#5C635B", "type": "color", "desc": "副文本" },
+      "400": { "value": "#6A7066", "type": "color", "desc": "元数据（纸面 4.87:1，满足 AA）" },
+      "300": { "value": "#A8AEA4", "type": "color", "desc": "保留，不用于任何文字（对比度 2.17:1 不达标）" }
+    },
+    "vital": {
+      "700": { "value": "#067647", "type": "color", "desc": "监护绿·墨（纸面对比 5.45:1）" },
+      "600": { "value": "#0B8F56", "type": "color", "desc": "监护绿·中" },
+      "500": { "value": "#12B76A", "type": "color", "desc": "监护绿·亮（仅用于深色监护屏内）" },
+      "300": { "value": "#6CE9A6", "type": "color", "desc": "监护绿·淡" }
+    },
+    "alarm": {
+      "700": { "value": "#9B1C1F", "type": "color", "desc": "病危红·深（印章压色 8.1:1）" },
+      "600": { "value": "#C1272D", "type": "color", "desc": "病危红（纸面对比 5.59:1）" },
+      "500": { "value": "#E03B3B", "type": "color", "desc": "病危红·亮（仅警示图标）" },
+      "50":  { "value": "#FBEDEC", "type": "color", "desc": "病危红·纸晕" }
+    },
+    "warn":    { "700": { "value": "#A16207", "type": "color", "desc": "琥珀·纸面 4.71:1" } },
+    "steel":   { "700": { "value": "#2F6D8F", "type": "color", "desc": "钢青·纸面 5.42:1" } },
+    "ember":   { "600": { "value": "#C2410C", "type": "color", "desc": "焦橙·纸面 4.95:1" } },
+    "monitor": {
+      "900": { "value": "#0E1613", "type": "color", "desc": "监护屏底（深绿黑，非纯黑）" },
+      "800": { "value": "#131E1A", "type": "color", "desc": "屏内嵌块" },
+      "700": { "value": "#1E2B25", "type": "color", "desc": "屏网格·细" },
+      "600": { "value": "#2A3A32", "type": "color", "desc": "屏网格·粗" },
+      "trace": { "value": "#3BF08C", "type": "color", "desc": "荧光磷绿波形（屏内 13.6:1）" }
+    }
+  },
+
+  "color": {
+    "bg":            { "value": "#FAFAF7", "type": "color", "layer": "A1" },
+    "surface":       { "value": "#FFFFFF", "type": "color", "layer": "A1" },
+    "surface-2":     { "value": "#F4F3ED", "type": "color", "layer": "B-slot" },
+    "surface-inset": { "value": "#EAE9E1", "type": "color", "layer": "B-slot" },
+    "fg":            { "value": "#161815", "type": "color", "layer": "A1" },
+    "fg-2":          { "value": "#2E332E", "type": "color", "layer": "B-slot" },
+    "muted":         { "value": "#5C635B", "type": "color", "layer": "A1" },
+    "meta":          { "value": "#6A7066", "type": "color", "layer": "B-slot" },
+    "border":        { "value": "#DCDBD1", "type": "color", "layer": "A1" },
+    "border-soft":   { "value": "#EAE9E1", "type": "color", "layer": "B-slot" },
+    "border-dash":   { "value": "#C9C8BC", "type": "color", "layer": "B-slot" },
+
+    "accent":        { "value": "#067647", "type": "color", "layer": "A1", "desc": "主色·监护绿。用于焦点环、内联链接、选中态" },
+    "accent-on":     { "value": "#FFFFFF", "type": "color", "layer": "A2" },
+    "accent-hover":  { "value": "#0B8F56", "type": "color", "layer": "A2" },
+    "accent-soft":   { "value": "#E7F4EC", "type": "color", "layer": "C" },
+
+    "action":        { "value": "#161815", "type": "color", "layer": "B-slot", "desc": "填入式主按钮底色（墨黑）。绿色保留给生命体征语义，避免贬值" },
+    "action-on":     { "value": "#FAFAF7", "type": "color", "layer": "B-slot" },
+    "action-hover":  { "value": "#2E332E", "type": "color", "layer": "B-slot" },
+    "action-active": { "value": "#000000", "type": "color", "layer": "B-slot" },
+
+    "alarm":         { "value": "#C1272D", "type": "color", "layer": "A2" },
+    "alarm-deep":    { "value": "#9B1C1F", "type": "color", "layer": "C" },
+    "alarm-soft":    { "value": "#FBEDEC", "type": "color", "layer": "C" },
+    "warn":          { "value": "#A16207", "type": "color", "layer": "A2" },
+    "success":       { "value": "#067647", "type": "color", "layer": "A2" },
+    "danger":        { "value": "#C1272D", "type": "color", "layer": "A2" },
+
+    "level-healthy": { "value": "#067647", "type": "color", "layer": "C", "desc": "健康" },
+    "level-clinic":  { "value": "#2F6D8F", "type": "color", "layer": "C", "desc": "门诊" },
+    "level-ward":    { "value": "#A16207", "type": "color", "layer": "C", "desc": "住院" },
+    "level-icu":     { "value": "#C2410C", "type": "color", "layer": "C", "desc": "ICU" },
+    "level-dead":    { "value": "#C1272D", "type": "color", "layer": "C", "desc": "临床死亡" },
+
+    "monitor-bg":    { "value": "#0E1613", "type": "color", "layer": "C" },
+    "monitor-bg-2":  { "value": "#131E1A", "type": "color", "layer": "C" },
+    "monitor-grid":  { "value": "#1E2B25", "type": "color", "layer": "C" },
+    "monitor-grid-2":{ "value": "#2A3A32", "type": "color", "layer": "C" },
+    "monitor-trace": { "value": "#3BF08C", "type": "color", "layer": "C" },
+    "monitor-text":  { "value": "#C8E6D6", "type": "color", "layer": "C" },
+    "monitor-muted": { "value": "#6E8C7C", "type": "color", "layer": "C" },
+    "monitor-alarm": { "value": "#FF6B5E", "type": "color", "layer": "C" },
+
+    "stamp":         { "value": "#C1272D", "type": "color", "layer": "C", "desc": "印章色，正文叠加时 opacity .88 + multiply" },
+    "stamp-opacity": { "value": "0.88", "type": "number", "layer": "C" },
+    "paper-rule":    { "value": "rgba(22,24,21,0.028)", "type": "color", "layer": "C", "desc": "病历纸横向格线，全站唯一的效果色，占比 <1%" },
+    "paper-rule-gap":{ "value": "32px", "type": "dimension", "layer": "C" },
+    "focus-ring":    { "value": "#067647", "type": "color", "layer": "A2" }
+  },
+
+  "font": {
+    "display": { "value": "\"Archivo\", \"PingFang SC\", \"Noto Sans SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", system-ui, sans-serif", "type": "fontFamily" },
+    "body":    { "value": "\"Archivo\", \"PingFang SC\", \"Noto Sans SC\", \"Source Han Sans SC\", \"Microsoft YaHei\", system-ui, sans-serif", "type": "fontFamily" },
+    "mono":    { "value": "\"Martian Mono\", \"SF Mono\", \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace", "type": "fontFamily" },
+    "serif-alt": { "value": "\"Songti SC\", \"Source Han Serif SC\", \"Noto Serif SC\", serif", "type": "fontFamily", "desc": "仅用于病危通知书公文体标题" }
+  },
+
+  "fontSize": {
+    "2xs":  { "value": "10px", "type": "dimension", "lineHeight": "1.2" },
+    "xs":   { "value": "12px", "type": "dimension", "lineHeight": "1.5" },
+    "sm":   { "value": "13px", "type": "dimension", "lineHeight": "1.55" },
+    "base": { "value": "15px", "type": "dimension", "lineHeight": "1.65" },
+    "md":   { "value": "17px", "type": "dimension", "lineHeight": "1.55" },
+    "lg":   { "value": "20px", "type": "dimension", "lineHeight": "1.4" },
+    "xl":   { "value": "24px", "type": "dimension", "lineHeight": "1.3" },
+    "2xl":  { "value": "30px", "type": "dimension", "lineHeight": "1.2" },
+    "3xl":  { "value": "38px", "type": "dimension", "lineHeight": "1.12" },
+    "4xl":  { "value": "48px", "type": "dimension", "lineHeight": "1.05" },
+    "5xl":  { "value": "64px", "type": "dimension", "lineHeight": "1" }
+  },
+
+  "fontWeight": {
+    "read":      { "value": "400", "type": "fontWeight" },
+    "emphasize": { "value": "510", "type": "fontWeight" },
+    "announce":  { "value": "590", "type": "fontWeight" }
+  },
+
+  "letterSpacing": {
+    "display": { "value": "-0.022em", "type": "dimension" },
+    "heading": { "value": "-0.012em", "type": "dimension" },
+    "body":    { "value": "0", "type": "dimension" },
+    "label":   { "value": "0.12em", "type": "dimension", "desc": "全大写表单标签" },
+    "mono":    { "value": "0", "type": "dimension" }
+  },
+
+  "spacing": {
+    "0":  { "value": "0", "type": "dimension" },
+    "1":  { "value": "4px", "type": "dimension" },
+    "2":  { "value": "8px", "type": "dimension" },
+    "3":  { "value": "12px", "type": "dimension" },
+    "4":  { "value": "16px", "type": "dimension" },
+    "5":  { "value": "20px", "type": "dimension" },
+    "6":  { "value": "24px", "type": "dimension" },
+    "8":  { "value": "32px", "type": "dimension" },
+    "10": { "value": "40px", "type": "dimension" },
+    "12": { "value": "48px", "type": "dimension" },
+    "16": { "value": "64px", "type": "dimension" },
+    "20": { "value": "80px", "type": "dimension" }
+  },
+
+  "radius": {
+    "none": { "value": "0px", "type": "dimension" },
+    "xs":   { "value": "2px", "type": "dimension" },
+    "sm":   { "value": "3px", "type": "dimension" },
+    "md":   { "value": "4px", "type": "dimension", "desc": "卡片/输入框上限" },
+    "lg":   { "value": "6px", "type": "dimension" },
+    "full": { "value": "9999px", "type": "dimension" }
+  },
+
+  "shadow": {
+    "flat":  { "value": "none", "type": "boxShadow" },
+    "paper": { "value": "0 1px 0 rgba(22,24,21,0.04), 0 2px 6px -3px rgba(22,24,21,0.10)", "type": "boxShadow" },
+    "lift":  { "value": "0 1px 0 rgba(22,24,21,0.05), 0 8px 12px -8px rgba(22,24,21,0.18)", "type": "boxShadow" },
+    "poster":{ "value": "0 2px 0 rgba(22,24,21,0.06), 0 24px 60px -28px rgba(22,24,21,0.32)", "type": "boxShadow", "desc": "仅 1080x1440 分享卡，该元素无边框" }
+  },
+
+  "motion": {
+    "instant": { "value": "80ms", "type": "duration" },
+    "fast":    { "value": "150ms", "type": "duration" },
+    "base":    { "value": "220ms", "type": "duration" },
+    "slow":    { "value": "320ms", "type": "duration" },
+    "ease":    { "value": "cubic-bezier(0.2, 0, 0, 1)", "type": "cubicBezier" },
+    "ease-out":{ "value": "cubic-bezier(0.16, 1, 0.3, 1)", "type": "cubicBezier" },
+    "sweep":   { "value": "3600ms", "type": "duration", "desc": "监护屏扫描一个循环，唯一长于 500ms 的动效，reduced-motion 下停止" }
+  },
+
+  "zIndex": {
+    "base": { "value": "0", "type": "number" },
+    "sticky": { "value": "100", "type": "number" },
+    "toast": { "value": "300", "type": "number" },
+    "modal": { "value": "400", "type": "number" }
+  },
+
+  "layout": {
+    "container-max": { "value": "1000px", "type": "dimension" },
+    "container-narrow": { "value": "620px", "type": "dimension" },
+    "gutter-mobile": { "value": "20px", "type": "dimension" },
+    "gutter-desktop": { "value": "32px", "type": "dimension" },
+    "section-y-mobile": { "value": "32px", "type": "dimension" },
+    "section-y-desktop": { "value": "56px", "type": "dimension" },
+    "touch-min": { "value": "44px", "type": "dimension" }
+  },
+
+  "breakpoint": {
+    "md": { "value": "768px", "type": "dimension" },
+    "lg": { "value": "1024px", "type": "dimension" }
+  }
+}

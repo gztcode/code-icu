@@ -1,0 +1,102 @@
+/* ==========================================================================
+   Code ICU · app-flow.css
+   体检中（loading）+ 异常态（error）
+   两者共用窄容器与页面抬头，所以放一起。
+   ========================================================================== */
+
+.page-head { padding: var(--space-8) 0 var(--space-5); }
+.page-head h1 { margin: var(--space-3) 0 0; font-size: var(--text-xl); font-weight: 590; letter-spacing: var(--tracking-heading); line-height: 1.3; }
+.page-head h1.repo { font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 500; letter-spacing: -0.01em; word-break: break-all; }
+.page-head p { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: 1.65; }
+.timer { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- 监护屏（体检中的实时扫描条） ---------- */
+.lead { position: relative; height: 168px; background: var(--monitor-bg); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.lead .strip { position: absolute; top: 0; left: 0; width: 200%; height: 100%; fill: none; stroke: var(--monitor-trace); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; animation: sweep var(--motion-sweep) linear infinite; }
+@keyframes sweep { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.lead-mask { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, var(--monitor-bg) 0%, transparent 12%, transparent 90%, var(--monitor-bg) 100%); }
+.lead-now { position: absolute; top: 0; bottom: 0; right: 11%; width: 1px; background: var(--monitor-alarm); opacity: 0.5; }
+.lead-tag { position: absolute; top: 10px; left: 12px; display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.16em; color: var(--monitor-trace); }
+.lead-tag i { width: 5px; height: 5px; border-radius: var(--radius-full); background: var(--monitor-trace); animation: blink 1.6s var(--ease-standard) infinite; }
+.lead-hr { position: absolute; bottom: 10px; right: 12px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--monitor-muted); }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+/* ---------- 分步进度 ---------- */
+.steps { margin-top: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.step { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: 1px dashed var(--border-soft); position: relative; }
+.step:last-child { border-bottom: 0; }
+.step.done .s-name { color: var(--fg-2); }
+.step.pending { opacity: 0.55; }
+.step.failed .s-name { color: var(--alarm); }
+
+.s-dot { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--border-dash); border-radius: var(--radius-full); color: var(--meta); }
+.step.done .s-dot { border-color: var(--accent); color: var(--accent); }
+.step.failed .s-dot { border-color: var(--alarm); color: var(--alarm); }
+.s-dot .num { font-family: var(--font-mono); font-size: 9px; }
+.s-main { min-width: 0; }
+.s-name { font-size: var(--text-sm); font-weight: 510; color: var(--fg); line-height: 1.4; }
+.s-api { font-family: var(--font-mono); font-size: 10px; color: var(--meta); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.s-out { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-align: right; white-space: nowrap; }
+.step.done .s-out { color: var(--accent); }
+.step.failed .s-out { color: var(--alarm); }
+
+/* 当前正在等待的那一行：底边一道滑动的光条，说明系统还在跑 */
+.step.running { background: var(--surface-2); }
+.step.running::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: linear-gradient(to right, transparent, var(--accent), transparent);
+  background-size: 40% 100%; background-repeat: no-repeat;
+  animation: slide 1.6s var(--ease-standard) infinite;
+}
+@keyframes slide { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+
+/* ---------- 进度条 ---------- */
+.bar-wrap { margin-top: var(--space-4); }
+.bar-track { height: 3px; background: var(--surface-inset); border-radius: var(--radius-full); overflow: hidden; }
+.bar-fill { height: 100%; width: 0; background: var(--accent); border-radius: var(--radius-full); transition: width var(--motion-base) var(--ease-standard); }
+.bar-meta { display: flex; justify-content: space-between; margin-top: var(--space-2); font-family: var(--font-mono); font-size: 10px; color: var(--meta); }
+.flow-actions { margin-top: var(--space-5); }
+.page-foot { margin-top: var(--space-8); padding: var(--space-4) 0 var(--space-10); border-top: 1px solid var(--border); font-size: var(--text-xs); color: var(--meta); line-height: 1.7; }
+
+/* ---------- 异常态 ---------- */
+.err { margin-top: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.err-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: 9px var(--space-4); background: var(--surface-2); border-bottom: 1px solid var(--border); }
+.err-head .num { font-size: var(--text-2xs); color: var(--muted); letter-spacing: 0.06em; }
+.err-body { padding: var(--space-4); }
+.err-title { display: flex; align-items: flex-start; gap: var(--space-3); }
+.e-icon { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border: 1px solid currentColor; border-radius: var(--radius-sm); }
+.err h2 { margin: 0; font-size: var(--text-md); font-weight: 590; line-height: 1.35; color: var(--fg); }
+.err-code { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--meta); margin-top: 3px; }
+.err-copy { margin: var(--space-3) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: 1.7; }
+.err-copy strong { color: var(--fg-2); font-weight: 510; }
+.tech { margin-top: var(--space-3); padding: 10px var(--space-3); background: var(--bg); border: 1px dashed var(--border-dash); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 10px; line-height: 1.7; color: var(--muted); overflow-wrap: anywhere; }
+.tech b { color: var(--fg-2); font-weight: 500; }
+.err-act { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px dashed var(--border-dash); }
+.c-404 { color: var(--level-clinic); }
+.c-403 { color: var(--level-ward); }
+.c-net { color: var(--alarm); }
+
+/* 快照降级提示条：出现在报告页顶部，必须显眼但不能抢健康分 */
+.snapbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-top: var(--space-4); padding: 10px var(--space-3); background: var(--alarm-soft); border: 1px dashed var(--alarm); border-radius: var(--radius-sm); }
+.snapbar .ic { color: var(--alarm); }
+.snapbar p { margin: 0; flex: 1 1 220px; font-size: var(--text-xs); color: var(--fg-2); line-height: 1.6; }
+.snapbar .num { color: var(--fg); }
+
+@media (min-width: 768px) {
+  .err-body { padding: var(--space-5); }
+  .page-head h1 { font-size: var(--text-2xl); }
+  .page-head { padding-top: var(--space-12); }
+}
+
+/* 窄屏下 API 路径完整折行，不裁切——这一行是「数据从哪来」的证据，不能省略 */
+@media (max-width: 560px) {
+  .step { grid-template-columns: 24px 1fr; row-gap: var(--space-2); }
+  .s-out { grid-column: 2; text-align: left; }
+  .s-api { white-space: normal; overflow: visible; overflow-wrap: anywhere; text-overflow: clip; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lead .strip { animation: none; }
+  .step.running::after { animation: none; background: var(--accent); }
+  .lead-tag i { animation: none; }
+}

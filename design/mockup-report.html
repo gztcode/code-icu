@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Code ICU · expressjs/express 体检报告</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Martian+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-tokens.css">
+<style>
+  .wrap { width: 100%; max-width: var(--container-max); margin: 0 auto; padding: 0 var(--gutter); }
+  .ic { width: 16px; height: 16px; flex: none; display: block; stroke: currentColor; fill: none;
+        stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .ic-20 { width: 20px; height: 20px; }
+  .ic-24 { width: 24px; height: 24px; }
+
+  /* ---------- 表头 ---------- */
+  .topbar { border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: var(--z-sticky); }
+  .topbar-in { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: var(--space-3); }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand-bar { width: 3px; height: 26px; background: var(--accent); flex: none; }
+  .brand-name { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 700;
+                letter-spacing: 0.16em; line-height: 1; }
+  .brand-sub { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--meta);
+               margin-top: 5px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top-action { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 12px;
+                background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
+                font-size: var(--text-xs); color: var(--fg-2); cursor: pointer; font-family: var(--font-body);
+                transition: border-color var(--motion-fast) var(--ease-standard); }
+  .top-action:hover { border-color: var(--fg-2); }
+
+  /* ---------- 通用 sheet ---------- */
+  .sheet { margin-top: var(--space-4); background: var(--surface); border: 1px solid var(--border);
+           border-radius: var(--radius-md); }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+                padding: 9px var(--space-4); background: var(--surface-2);
+                border-bottom: 1px solid var(--border);
+                border-radius: var(--radius-md) var(--radius-md) 0 0; }
+  .sheet-head .num { font-size: var(--text-2xs); color: var(--muted); }
+
+  /* ---------- 身份卡 ---------- */
+  .patient { display: flex; gap: var(--space-4); padding: var(--space-4); }
+  .avatar { position: relative; width: 52px; height: 52px; flex: none; border-radius: var(--radius-sm);
+            overflow: hidden; border: 1px solid var(--border); background: var(--surface-inset);
+            display: grid; place-items: center; }
+  .avatar span { font-family: var(--font-mono); font-size: var(--text-md); font-weight: 700; color: var(--muted); }
+  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .p-id { min-width: 0; flex: 1 1 auto; }
+  .p-owner { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--muted); }
+  .p-name { font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 500;
+            color: var(--fg); letter-spacing: -0.01em; line-height: 1.25; word-break: break-word; }
+  .p-desc { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: 1.6; }
+
+  .meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+               gap: var(--space-3) var(--space-4); padding: 0 var(--space-4) var(--space-4); }
+  .meta-item { display: flex; align-items: flex-start; gap: 8px; }
+  .meta-item .ic { color: var(--meta); margin-top: 1px; }
+  .meta-k { font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: 0.1em; color: var(--meta); line-height: 1.4; }
+  .meta-v { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--fg); line-height: 1.4; word-break: break-word; }
+
+  /* ---------- 健康分 ---------- */
+  .score-sheet { padding: var(--space-5) var(--space-4) var(--space-4); }
+  .score-main { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-4) var(--space-5); }
+  .score-num-wrap { display: flex; align-items: baseline; gap: 6px; }
+  .score-num { font-size: var(--text-5xl); font-weight: 700; line-height: 0.86; color: var(--fg); letter-spacing: -0.02em; }
+  .score-den { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--meta); }
+  .score-right { flex: 1 1 200px; min-width: 0; }
+  .score-diag { margin: var(--space-2) 0 0; font-size: var(--text-md); line-height: 1.55;
+                color: var(--fg-2); font-weight: 400; letter-spacing: -0.008em; }
+  .score-diag b { font-weight: 590; color: var(--fg); }
+
+  .chip { display: inline-flex; align-items: center; height: 24px; padding: 0 9px;
+          font-family: var(--font-mono); font-size: var(--text-2xs); font-weight: 500;
+          letter-spacing: 0.08em; border: 1px solid currentColor; border-radius: var(--radius-xs); white-space: nowrap; }
+  .chip-lg { height: 26px; font-size: 11px; padding: 0 10px; }
+  .c-healthy { color: var(--level-healthy); }
+  .c-clinic  { color: var(--level-clinic); }
+  .c-ward    { color: var(--level-ward); }
+  .c-icu     { color: var(--level-icu); }
+  .c-dead    { color: var(--level-dead); }
+
+  /* 分诊标尺 */
+  .ruler { margin-top: var(--space-5); }
+  .ruler-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .ruler-track { display: flex; gap: 2px; height: 9px; }
+  .seg { border-radius: var(--radius-xs); opacity: 0.16; }
+  .seg.on { opacity: 1; }
+  .s-dead   { background: var(--level-dead); }
+  .s-icu    { background: var(--level-icu); }
+  .s-ward   { background: var(--level-ward); }
+  .s-clinic { background: var(--level-clinic); }
+  .s-healthy{ background: var(--level-healthy); }
+  .ruler-labels { display: flex; gap: 2px; margin-top: 6px; }
+  .ruler-labels > div { min-width: 0; }
+  .rl { font-size: 10px; line-height: 1.3; color: var(--meta); letter-spacing: 0.02em; }
+  .rl.on { color: var(--fg); font-weight: 590; }
+  .rl-range { font-family: var(--font-mono); font-size: 9px; color: var(--meta); letter-spacing: 0; line-height: 1.4; }
+
+  /* 预后推演 */
+  .prognosis { margin-top: var(--space-5); padding-top: var(--space-4);
+               border-top: 1px dashed var(--border-dash);
+               display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-3); }
+  .pg-num { font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: 700;
+            line-height: 1; color: var(--fg); letter-spacing: -0.01em; }
+  .pg-unit { font-size: var(--text-xs); color: var(--muted); }
+  .pg-note { flex: 1 1 100%; margin: 0; font-size: var(--text-2xs); color: var(--meta); line-height: 1.6; }
+  .pg-note code { font-family: var(--font-mono); letter-spacing: 0; color: var(--fg-2); }
+
+  /* ---------- 监护屏 ---------- */
+  .monitor { margin: var(--space-4) 0 0; background: var(--surface); border: 1px solid var(--border);
+             border-radius: var(--radius-md); overflow: hidden; }
+  .mon-hd { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+            padding: 10px var(--space-4); background: var(--surface-2); border-bottom: 1px solid var(--border); }
+  .mon-read { font-size: var(--text-md); font-weight: 700; color: var(--fg); letter-spacing: -0.01em; }
+  .mon-read em { font-family: var(--font-body); font-size: 10px; font-style: normal; color: var(--muted); font-weight: 400; margin-left: 2px; }
+  .screen { position: relative; background: var(--monitor-bg); }
+  .ecg { display: block; width: 100%; height: auto; }
+  .mon-live { position: absolute; top: 8px; right: 10px; display: flex; align-items: center; gap: 5px;
+              font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--monitor-trace); }
+  .mon-live i { width: 5px; height: 5px; border-radius: var(--radius-full); background: var(--monitor-trace);
+                animation: pulse 1.8s var(--ease-standard) infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.28 } }
+  .mon-cap { padding: 10px var(--space-4) var(--space-4); display: flex; flex-wrap: wrap;
+             gap: var(--space-1) var(--space-4); font-family: var(--font-mono);
+             font-size: var(--text-2xs); color: var(--muted); }
+  .mon-cap b { color: var(--fg-2); font-weight: 500; }
+
+  /* ---------- 六项体征 ---------- */
+  .vitals { margin-top: var(--space-8); }
+  .sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3);
+           margin-bottom: var(--space-3); }
+  .sec-h h2 { margin: 0; font-size: var(--text-lg); font-weight: 590; letter-spacing: var(--tracking-heading); }
+  .sec-h .num { font-size: var(--text-2xs); color: var(--meta); }
+  .vital-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .vital { padding: var(--space-4); border-bottom: 1px dashed var(--border-dash); }
+  .vital:last-child { border-bottom: 0; }
+  .v-hd { display: flex; align-items: flex-start; gap: var(--space-3); }
+  .v-ic { width: 32px; height: 32px; flex: none; display: grid; place-items: center;
+          border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--fg-2); }
+  .v-title { flex: 1 1 auto; min-width: 0; }
+  .v-title h3 { margin: 0; font-size: var(--text-base); font-weight: 590; line-height: 1.3; }
+  .v-en { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; color: var(--meta); }
+  .v-value { display: flex; align-items: baseline; gap: 3px; flex: none; }
+  .v-num { font-size: var(--text-lg); font-weight: 700; line-height: 1; color: var(--fg); }
+  .v-unit { font-size: 10px; color: var(--muted); }
+  .v-chiprow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-3); }
+  .bars { display: flex; gap: 3px; flex: 1 1 auto; max-width: 420px; }
+  .bars i { flex: 1 1 0; height: 6px; border-radius: var(--radius-xs); background: var(--surface-inset); }
+  .bars i.on { background: var(--c); }
+  .v-score { display: flex; align-items: center; gap: 6px; font-size: var(--text-2xs);
+             color: var(--meta); flex: none; white-space: nowrap; }
+  .v-score b { color: var(--fg-2); font-weight: 500; }
+  .sdot { width: 6px; height: 6px; border-radius: var(--radius-xs); background: var(--c); flex: none; }
+  .st { color: var(--c); font-weight: 500; letter-spacing: 0.04em; }
+  .v-diag { margin: var(--space-3) 0 0; font-size: var(--text-sm); color: var(--fg-2); line-height: 1.6; }
+
+  details.calc { margin-top: var(--space-3); }
+  details.calc > summary { display: inline-flex; align-items: center; gap: 5px; cursor: pointer;
+                           list-style: none; font-size: var(--text-xs); color: var(--accent);
+                           min-height: 28px; }
+  details.calc > summary::-webkit-details-marker { display: none; }
+  details.calc > summary .chev { transition: transform var(--motion-base) var(--ease-standard); }
+  details.calc[open] > summary .chev { transform: rotate(180deg); }
+  .calc-box { margin-top: 6px; padding: var(--space-3); background: var(--bg);
+              border: 1px dashed var(--border-dash); border-radius: var(--radius-sm); }
+  .calc-row { display: flex; gap: var(--space-3); justify-content: space-between;
+              padding: 5px 0; border-bottom: 1px dashed var(--border-soft); font-size: var(--text-xs); }
+  .calc-row:last-child { border-bottom: 0; }
+  .calc-row > span:first-child { color: var(--meta); flex: none; }
+  .calc-row > span:last-child { color: var(--fg-2); text-align: right; font-family: var(--font-mono); letter-spacing: 0; }
+
+  /* ---------- 病史 ---------- */
+  .history { margin-top: var(--space-8); padding: var(--space-4); background: var(--surface);
+             border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .tl { list-style: none; margin: var(--space-4) 0 0; padding: 0 0 0 16px;
+        border-left: 1px dashed var(--border-dash); }
+  .tl li { position: relative; padding-bottom: var(--space-4); }
+  .tl li:last-child { padding-bottom: 0; }
+  .tl li::before { content: ""; position: absolute; left: -21px; top: 5px; width: 7px; height: 7px;
+                   background: var(--surface); border: 1px solid var(--border-dash); border-radius: var(--radius-xs); }
+  .tl li.now::before { background: var(--accent); border-color: var(--accent); }
+  .tl-date { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--fg); letter-spacing: 0; }
+  .tl-label { font-size: var(--text-2xs); letter-spacing: 0.1em; color: var(--meta);
+              font-family: var(--font-mono); margin-left: 8px; }
+  .tl-desc { margin: 3px 0 0; font-size: var(--text-sm); color: var(--muted); line-height: 1.55; }
+  .tl-desc code { font-family: var(--font-mono); font-size: 11px; color: var(--fg-2); }
+
+  /* ---------- 治疗建议 ---------- */
+  .advice { margin-top: var(--space-8); }
+  .ad-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .ad { display: grid; grid-template-columns: 34px 1fr; gap: var(--space-3);
+        padding: var(--space-4); border-bottom: 1px dashed var(--border-dash); }
+  .ad:last-child { border-bottom: 0; }
+  .pri { display: inline-flex; align-items: center; justify-content: center; height: 20px;
+         font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+         border: 1px solid currentColor; border-radius: var(--radius-xs); align-self: start; }
+  .p0 { color: var(--alarm); }
+  .p1 { color: var(--level-icu); }
+  .p2 { color: var(--level-clinic); }
+  .ad-title { margin: 0; font-size: var(--text-base); font-weight: 510; line-height: 1.45; color: var(--fg); }
+  .ad-body { margin: 5px 0 0; font-size: var(--text-sm); color: var(--muted); line-height: 1.65; }
+  .ad-body code { font-family: var(--font-mono); font-size: 11px; color: var(--fg-2); background: var(--surface-2); padding: 1px 4px; border-radius: var(--radius-xs); }
+
+  /* ---------- 底部操作 ---------- */
+  .actions { margin-top: var(--space-8); padding-top: var(--space-5); border-top: 1px solid var(--border); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+         min-height: var(--touch-min); padding: 0 18px; border-radius: var(--radius-sm);
+         font-family: var(--font-body); font-size: var(--text-base); font-weight: 510;
+         cursor: pointer; border: 1px solid transparent;
+         transition: background-color var(--motion-fast) var(--ease-standard),
+                     border-color var(--motion-fast) var(--ease-standard),
+                     transform var(--motion-instant) var(--ease-standard); }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--action); color: var(--action-on); width: 100%; }
+  .btn-primary:hover { background: var(--action-hover); }
+  .btn-ghost { background: transparent; color: var(--fg-2); border-color: var(--border); }
+  .btn-ghost:hover { border-color: var(--fg-2); background: var(--surface-2); }
+  .actions-row { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+  .actions-row .btn { flex: 1 1 0; min-width: 0; font-size: var(--text-sm); padding: 0 10px; }
+
+  .foot { margin-top: var(--space-8); padding: var(--space-4) 0 var(--space-10);
+          border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4);
+          justify-content: space-between; font-size: var(--text-xs); color: var(--meta); }
+
+  @media (min-width: 768px) {
+    .sheet { margin-top: var(--space-6); }
+    .patient { padding: var(--space-5); gap: var(--space-5); }
+    .avatar { width: 64px; height: 64px; }
+    .p-name { font-size: var(--text-xl); }
+    .meta-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0 var(--space-5) var(--space-5); }
+    .score-sheet { padding: var(--space-6) var(--space-5) var(--space-5); }
+    .score-num { font-size: 88px; }
+    .score-diag { font-size: var(--text-lg); max-width: 30em; }
+    .vital { padding: var(--space-5); }
+    .v-hd { align-items: center; }
+    .v-diag { max-width: 46em; }
+    .history, .advice { margin-top: var(--space-12); }
+    .btn-primary { width: auto; min-width: 220px; }
+    .actions { display: flex; align-items: center; gap: var(--space-3); }
+    .actions-row { margin-top: 0; }
+    .mon-cap { font-size: var(--text-xs); }
+  }
+</style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></symbol>
+<symbol id="i-alert-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M4.929 4.929 19.07 19.071"/></symbol>
+<symbol id="i-calendar-clock" viewBox="0 0 24 24"><path d="M16 14v2.2l1.6 1"/><path d="M16 2v3"/><path d="M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"/><path d="M3 9h5.859"/><path d="M8 2v3"/><circle cx="16" cy="16" r="6"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></symbol>
+<symbol id="i-circle-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="12" r="10"/></symbol>
+<symbol id="i-clipboard-list" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-code-2" viewBox="0 0 24 24"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></symbol>
+<symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-file-key" viewBox="0 0 24 24"><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M4 12v6"/><path d="M4 14h2"/><path d="M9.65 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v4"/><circle cx="4" cy="20" r="2"/></symbol>
+<symbol id="i-file-question" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M12 17h.01"/><path d="M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/></symbol>
+<symbol id="i-file-text" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+<symbol id="i-flask-conical" viewBox="0 0 24 24"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/><path d="M6.453 15h11.094"/><path d="M8.5 2h7"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+<symbol id="i-git-fork" viewBox="0 0 24 24"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/></symbol>
+<symbol id="i-heart-pulse" viewBox="0 0 24 24"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></symbol>
+<symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-repeat-2" viewBox="0 0 24 24"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></symbol>
+<symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/><path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/><path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/><path d="M7 21h10"/></symbol>
+<symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></symbol>
+<symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-square-check-big" viewBox="0 0 24 24"><path d="M21 10.656V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.344"/><path d="m9 11 3 3L22 4"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></symbol>
+<symbol id="i-stethoscope" viewBox="0 0 24 24"><path d="M11 2v2"/><path d="M5 2v2"/><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/></symbol>
+<symbol id="i-syringe" viewBox="0 0 24 24"><path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/></symbol>
+<symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-user-round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></symbol>
+<symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/><path d="M5 12.859a10 10 0 0 1 5.17-2.69"/><path d="M19 12.859a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></symbol>
+<symbol id="i-wind" viewBox="0 0 24 24"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/></symbol>
+<symbol id="i-workflow" viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <div class="brand">
+      <span class="brand-bar" aria-hidden="true"></span>
+      <div style="min-width:0">
+        <div class="brand-name">CODE ICU</div>
+        <div class="brand-sub">体检报告 / 病案号 EX-20090626</div>
+      </div>
+    </div>
+    <button class="top-action" type="button">
+      <svg class="ic" aria-hidden="true"><use href="#i-rotate-ccw"/></svg>重新体检
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ 1. 患者档案 ============ -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <span class="label">患者档案 / PATIENT FILE</span>
+      <span class="num">抓取于 10-26 10:04</span>
+    </div>
+    <div class="patient">
+      <div class="avatar">
+        <span>EX</span>
+        <img src="https://avatars.githubusercontent.com/u/5658226?v=4&s=160" alt="" onerror="this.style.display='none'">
+      </div>
+      <div class="p-id">
+        <div class="p-owner">expressjs</div>
+        <div class="p-name">express</div>
+        <p class="p-desc">Fast, unopinionated, minimalist web framework for node.</p>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-item">
+        <svg class="ic" aria-hidden="true"><use href="#i-star"/></svg>
+        <div><div class="meta-k">STARS</div><div class="meta-v">69,578</div></div>
+      </div>
+      <div class="meta-item">
+        <svg class="ic" aria-hidden="true"><use href="#i-git-fork"/></svg>
+        <div><div class="meta-k">FORKS</div><div class="meta-v">25,268</div></div>
+      </div>
+      <div class="meta-item">
+        <svg class="ic" aria-hidden="true"><use href="#i-circle-dot"/></svg>
+        <div><div class="meta-k">OPEN ISSUES</div><div class="meta-v">253</div></div>
+      </div>
+      <div class="meta-item">
+        <svg class="ic" aria-hidden="true"><use href="#i-code-2"/></svg>
+        <div><div class="meta-k">LANGUAGE</div><div class="meta-v">JavaScript</div></div>
+      </div>
+      <div class="meta-item">
+        <svg class="ic" aria-hidden="true"><use href="#i-scale"/></svg>
+        <div><div class="meta-k">LICENSE</div><div class="meta-v">MIT</div></div>
+      </div>
+      <div class="meta-item">
+        <svg class="ic" aria-hidden="true"><use href="#i-calendar-clock"/></svg>
+        <div><div class="meta-k">LAST COMMIT</div><div class="meta-v">2026-10-23</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. 健康分 ============ -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <span class="label">综合健康分 / HEALTH SCORE</span>
+      <span class="num">六项加权</span>
+    </div>
+    <div class="score-sheet">
+      <div class="score-main" role="group" aria-label="综合健康分 87 分，满分 100 分，病危等级：健康">
+        <div class="score-num-wrap">
+          <span class="score-num num">87</span>
+          <span class="score-den num">/100</span>
+        </div>
+        <div class="score-right">
+          <span class="chip chip-lg c-healthy">健康 · HEALTHY</span>
+          <p class="score-diag">
+            各项指标平稳，一年 96 次提交、43 个人在推。<b>绿色是真的，可以放心装。</b>
+          </p>
+        </div>
+      </div>
+
+      <div class="ruler">
+        <div class="ruler-top">
+          <span class="label">分诊标尺 / TRIAGE</span>
+          <span class="num" style="font-size: var(--text-2xs); color: var(--meta)">SCORE 87</span>
+        </div>
+        <div class="ruler-track" aria-hidden="true">
+          <span class="seg s-dead" style="flex:30"></span>
+          <span class="seg s-icu" style="flex:20"></span>
+          <span class="seg s-ward" style="flex:20"></span>
+          <span class="seg s-clinic" style="flex:15"></span>
+          <span class="seg s-healthy on" style="flex:16"></span>
+        </div>
+        <div class="ruler-labels" aria-hidden="true">
+          <div style="flex:30"><div class="rl">临床死亡</div><div class="rl-range">0–29</div></div>
+          <div style="flex:20"><div class="rl">ICU</div><div class="rl-range">30–49</div></div>
+          <div style="flex:20"><div class="rl">住院观察</div><div class="rl-range">50–69</div></div>
+          <div style="flex:15"><div class="rl">门诊随访</div><div class="rl-range">70–84</div></div>
+          <div style="flex:16"><div class="rl on">健康</div><div class="rl-range">85–100</div></div>
+        </div>
+      </div>
+
+      <div class="prognosis">
+        <span class="label">预后推演 / PROGNOSIS</span>
+        <span class="pg-num num">314</span><span class="pg-unit">天</span>
+        <p class="pg-note">
+          推演公式：<code>健康分/100 × 365 × 1/(1+停更天数/180)</code>，基于 6 项公开指标的确定性计算，不是预言。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3. 监护屏 ============ -->
+  <figure class="monitor">
+    <div class="mon-hd">
+      <span class="label">近 12 个月提交 / COMMIT RHYTHM</span>
+      <span class="mon-read"><span class="num">96</span><em>次 / 年</em></span>
+    </div>
+    <div class="screen">
+      <svg class="ecg" viewBox="0 0 720 208" role="img"
+           aria-label="近 12 个月提交趋势心电图：2025 年 11 月至 2026 年 10 月，共 12 个心搏，峰值 2026 年 4 月 14 次，谷值 2025 年 11 月 4 次">
+        <defs>
+          <pattern id="gMin" width="24" height="24" patternUnits="userSpaceOnUse">
+            <path d="M24 0 L0 0 0 24" fill="none" style="stroke:var(--monitor-grid)" stroke-width="1"/>
+          </pattern>
+          <pattern id="gMaj" width="120" height="120" patternUnits="userSpaceOnUse">
+            <path d="M120 0 L0 0 0 120" fill="none" style="stroke:var(--monitor-grid-2)" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="720" height="208" fill="url(#gMin)"/>
+        <rect width="720" height="208" fill="url(#gMaj)"/>
+
+        <path d="M8 148 Q12 144.29 16 148 L21 148 L25.5 152.57 L30.5 119.43 L35.5 156.57 L40 148 L44 148 Q48 140.57 53 148 L66.67 148 Q70.67 142.43 74.67 148 L79.67 148 L84.17 154.86 L89.17 105.14 L94.17 160.86 L98.67 148 L102.67 148 Q106.67 136.86 111.67 148 L125.33 148 Q129.33 139.64 133.33 148 L138.33 148 L142.83 158.29 L147.83 83.71 L152.83 167.29 L157.33 148 L161.33 148 Q165.33 131.29 170.33 148 L184 148 Q188 143.36 192 148 L197 148 L201.5 153.71 L206.5 112.29 L211.5 158.71 L216 148 L220 148 Q224 138.71 229 148 L242.67 148 Q246.67 136.86 250.67 148 L255.67 148 L260.17 161.71 L265.17 62.29 L270.17 173.71 L274.67 148 L278.67 148 Q282.67 125.71 287.67 148 L301.33 148 Q305.33 135 309.33 148 L314.33 148 L318.83 164 L323.83 48 L328.83 178 L333.33 148 L337.33 148 Q341.33 122 346.33 148 L360 148 Q364 137.79 368 148 L373 148 L377.5 160.57 L382.5 69.43 L387.5 171.57 L392 148 L396 148 Q400 127.57 405 148 L418.67 148 Q422.67 140.57 426.67 148 L431.67 148 L436.17 157.14 L441.17 90.86 L446.17 165.14 L450.67 148 L454.67 148 Q458.67 133.14 463.67 148 L477.33 148 Q481.33 141.5 485.33 148 L490.33 148 L494.83 156 L499.83 98 L504.83 163 L509.33 148 L513.33 148 Q517.33 135 522.33 148 L536 148 Q540 139.64 544 148 L549 148 L553.5 158.29 L558.5 83.71 L563.5 167.29 L568 148 L572 148 Q576 131.29 581 148 L594.67 148 Q598.67 142.43 602.67 148 L607.67 148 L612.17 154.86 L617.17 105.14 L622.17 160.86 L626.67 148 L630.67 148 Q634.67 136.86 639.67 148 L653.33 148 Q657.33 143.36 661.33 148 L666.33 148 L670.83 153.71 L675.83 112.29 L680.83 158.71 L685.33 148 L689.33 148 Q693.33 138.71 698.33 148 L712 148"
+              fill="none" style="stroke:var(--monitor-trace)" stroke-width="2.2"
+              stroke-linejoin="round" stroke-linecap="round"/>
+
+        <line x1="712" y1="30" x2="712" y2="186" style="stroke:var(--monitor-alarm)" stroke-width="1"
+              stroke-dasharray="3 4" opacity="0.55"/>
+
+        <text x="323.83" y="40" text-anchor="middle" style="fill:var(--monitor-trace);font-family:var(--font-mono);font-size:10px">14</text>
+
+        <g style="fill:var(--monitor-muted);font-family:var(--font-mono);font-size:9px" text-anchor="middle">
+          <text x="36.67" y="199">11</text><text x="94" y="199">12</text><text x="151.33" y="199">01</text>
+          <text x="208.67" y="199">02</text><text x="266" y="199">03</text><text x="323.33" y="199">04</text>
+          <text x="380.67" y="199">05</text><text x="438" y="199">06</text><text x="495.33" y="199">07</text>
+          <text x="552.67" y="199">08</text><text x="610" y="199">09</text><text x="667.33" y="199">10</text>
+        </g>
+      </svg>
+      <div class="mon-live"><i aria-hidden="true"></i>LIVE</div>
+    </div>
+    <figcaption class="mon-cap">
+      <span>峰值 <b>2026-04 · 14 次</b></span>
+      <span>谷值 <b>2025-11 · 4 次</b></span>
+      <span>波动比 <b>3.5×</b></span>
+      <span>2025-11 → 2026-10</span>
+    </figcaption>
+  </figure>
+
+  <!-- ============ 4. 六项体征 ============ -->
+  <section class="vitals">
+    <div class="sec-h">
+      <h2>六项体征</h2>
+      <span class="num">VITALS × 6</span>
+    </div>
+
+    <div class="vital-list">
+
+      <!-- 心跳 -->
+      <article class="vital">
+        <div class="v-hd">
+          <div class="v-ic"><svg class="ic ic-16" aria-hidden="true"><use href="#i-heart-pulse"/></svg></div>
+          <div class="v-title">
+            <h3>心跳</h3>
+            <div class="v-en">HEART RATE</div>
+          </div>
+          <div class="v-value"><span class="v-num num">2</span><span class="v-unit">天前</span></div>
+        </div>
+        <div class="v-chiprow">
+          <div class="bars" style="--c: var(--level-healthy)" aria-hidden="true">
+            <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+          </div>
+          <span class="v-score" style="--c: var(--level-healthy)"><i class="sdot" aria-hidden="true"></i><span class="st">正常</span><span>·</span><b>100.0</b><span>分</span><span>·</span><span>权重 25%</span></span>
+        </div>
+        <p class="v-diag">两天前刚推过一次。近 12 个月 96 次提交，平均一周两次——不是赶工，是有人在正常上班。</p>
+        <details class="calc">
+          <summary>怎么算的 <svg class="ic chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+          <div class="calc-box">
+            <div class="calc-row"><span>原始数据</span><span>pushed_at = 2026-10-23</span></div>
+            <div class="calc-row"><span>口径</span><span>d = 距今天数 = 2 天</span></div>
+            <div class="calc-row"><span>分档</span><span>d ≤ 7 → 100</span></div>
+            <div class="calc-row"><span>评分</span><span>heartbeat = 100.0</span></div>
+          </div>
+        </details>
+      </article>
+
+      <!-- 呼吸 -->
+      <article class="vital">
+        <div class="v-hd">
+          <div class="v-ic"><svg class="ic ic-16" aria-hidden="true"><use href="#i-wind"/></svg></div>
+          <div class="v-title">
+            <h3>呼吸频率</h3>
+            <div class="v-en">RESPIRATION</div>
+          </div>
+          <div class="v-value"><span class="v-num num">96</span><span class="v-unit">次/年</span></div>
+        </div>
+        <div class="v-chiprow">
+          <div class="bars" style="--c: var(--level-healthy)" aria-hidden="true">
+            <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i>
+          </div>
+          <span class="v-score" style="--c: var(--level-healthy)"><i class="sdot" aria-hidden="true"></i><span class="st">正常</span><span>·</span><b>80.0</b><span>分</span><span>·</span><span>权重 20%</span></span>
+        </div>
+        <p class="v-diag">96 次提交，按 120 次/年满分折算 80 分。近半年与前半程基本持平，趋势修正 0——没在加速，也没有衰退。</p>
+        <details class="calc">
+          <summary>怎么算的 <svg class="ic chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+          <div class="calc-box">
+            <div class="calc-row"><span>原始数据</span><span>近 12 月提交 96 次（未触 100 上限）</span></div>
+            <div class="calc-row"><span>基础分</span><span>clamp(96 ÷ 120 × 100) = 80.0</span></div>
+            <div class="calc-row"><span>趋势修正</span><span>近 6 月 ÷ 前 6 月 ≈ 1.0 → 0</span></div>
+            <div class="calc-row"><span>评分</span><span>clamp(80.0 + 0) = 80.0</span></div>
+          </div>
+        </details>
+      </article>
+
+      <!-- 单人依赖 -->
+      <article class="vital">
+        <div class="v-hd">
+          <div class="v-ic"><svg class="ic ic-16" aria-hidden="true"><use href="#i-user-round"/></svg></div>
+          <div class="v-title">
+            <h3>单人依赖度</h3>
+            <div class="v-en">BUS FACTOR</div>
+          </div>
+          <div class="v-value"><span class="v-num num">11.9</span><span class="v-unit">% 单人</span></div>
+        </div>
+        <div class="v-chiprow">
+          <div class="bars" style="--c: var(--level-healthy)" aria-hidden="true">
+            <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+          </div>
+          <span class="v-score" style="--c: var(--level-healthy)"><i class="sdot" aria-hidden="true"></i><span class="st">健康</span><span>·</span><b>97.3</b><span>分</span><span>·</span><span>权重 20%</span></span>
+        </div>
+        <p class="v-diag">近 12 个月 43 位作者，提交最多的那位只占 11.9%。这个比例在热门框架里低得反常——多数同类项目还压在 40% 以上。</p>
+        <details class="calc">
+          <summary>怎么算的 <svg class="ic chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+          <div class="calc-box">
+            <div class="calc-row"><span>原始数据</span><span>近 12 月 96 次提交 / 43 位作者</span></div>
+            <div class="calc-row"><span>口径</span><span>最大单作者占比 = 11.9%（排除 bot）</span></div>
+            <div class="calc-row"><span>加成</span><span>作者 ≥ 8 → +8</span></div>
+            <div class="calc-row"><span>评分</span><span>100 − 11.9 × 0.9 + 8 = 97.3</span></div>
+          </div>
+        </details>
+      </article>
+
+      <!-- 代谢 -->
+      <article class="vital">
+        <div class="v-hd">
+          <div class="v-ic"><svg class="ic ic-16" aria-hidden="true"><use href="#i-repeat-2"/></svg></div>
+          <div class="v-title">
+            <h3>代谢</h3>
+            <div class="v-en">METABOLISM</div>
+          </div>
+          <div class="v-value"><span class="v-num num">16</span><span class="v-unit">天前发版</span></div>
+        </div>
+        <div class="v-chiprow">
+          <div class="bars" style="--c: var(--level-healthy)" aria-hidden="true">
+            <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+          </div>
+          <span class="v-score" style="--c: var(--level-healthy)"><i class="sdot" aria-hidden="true"></i><span class="st">正常</span><span>·</span><b>100.0</b><span>分</span><span>·</span><span>权重 10%</span></span>
+        </div>
+        <p class="v-diag">v5.3.0 发布于 16 天前，近 12 个月共 6 个版本。30 天内发过版直接按满分起算，加成再叠也只是把 100 压得更实。</p>
+        <details class="calc">
+          <summary>怎么算的 <svg class="ic chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+          <div class="calc-box">
+            <div class="calc-row"><span>最近发版</span><span>v5.3.0 · 2026-10-10</span></div>
+            <div class="calc-row"><span>分档</span><span>d = 16 → d ≤ 30 → 100</span></div>
+            <div class="calc-row"><span>加成</span><span>min(10, 6 版 × 2) = 10</span></div>
+            <div class="calc-row"><span>评分</span><span>clamp(100 + 10) = 100.0</span></div>
+          </div>
+        </details>
+      </article>
+
+      <!-- 免疫 -->
+      <article class="vital">
+        <div class="v-hd">
+          <div class="v-ic"><svg class="ic ic-16" aria-hidden="true"><use href="#i-shield-check"/></svg></div>
+          <div class="v-title">
+            <h3>免疫</h3>
+            <div class="v-en">IMMUNITY</div>
+          </div>
+          <div class="v-value"><span class="v-num num">51.4</span><span class="v-unit">% 陈旧</span></div>
+        </div>
+        <div class="v-chiprow">
+          <div class="bars" style="--c: var(--level-icu)" aria-hidden="true">
+            <i class="on"></i><i class="on"></i><i></i><i></i><i></i>
+          </div>
+          <span class="v-score" style="--c: var(--level-icu)"><i class="sdot" aria-hidden="true"></i><span class="st">偏低</span><span>·</span><b>40.6</b><span>分</span><span>·</span><span>权重 15%</span></span>
+        </div>
+        <p class="v-diag">253 个未关闭 issue，超过一半挂在那儿三个月以上没人动。六项里唯一真正拖后腿的一项，也是唯一能靠流程改掉的一项。</p>
+        <details class="calc">
+          <summary>怎么算的 <svg class="ic chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+          <div class="calc-box">
+            <div class="calc-row"><span>原始数据</span><span>未关闭 issue 253 条（已排除 PR）</span></div>
+            <div class="calc-row"><span>陈旧占比</span><span>130 条 &gt; 90 天未更新 = 51.4%</span></div>
+            <div class="calc-row"><span>积压惩罚</span><span>存量 &gt; 200 → −8</span></div>
+            <div class="calc-row"><span>评分</span><span>(100 − 51.4) + (−8) = 40.6</span></div>
+          </div>
+        </details>
+      </article>
+
+      <!-- 遗嘱 -->
+      <article class="vital">
+        <div class="v-hd">
+          <div class="v-ic"><svg class="ic ic-16" aria-hidden="true"><use href="#i-scroll-text"/></svg></div>
+          <div class="v-title">
+            <h3>遗嘱</h3>
+            <div class="v-en">WILL</div>
+          </div>
+          <div class="v-value"><span class="v-num num">7</span><span class="v-unit">/ 7 项</span></div>
+        </div>
+        <div class="v-chiprow">
+          <div class="bars" style="--c: var(--level-healthy)" aria-hidden="true">
+            <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+          </div>
+          <span class="v-score" style="--c: var(--level-healthy)"><i class="sdot" aria-hidden="true"></i><span class="st">完整</span><span>·</span><b>100.0</b><span>分</span><span>·</span><span>权重 10%</span></span>
+        </div>
+        <p class="v-diag">MIT 许可证、README 过一千五百字、安装段与使用段分开写、许可段单列、还有状态徽章。七个计分点一个不缺——这是全套指标里最难做假的一项。</p>
+        <details class="calc">
+          <summary>怎么算的 <svg class="ic chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+          <div class="calc-box">
+            <div class="calc-row"><span>许可证</span><span>MIT → 40</span></div>
+            <div class="calc-row"><span>README</span><span>存在 15 + 正文 &gt; 1500 字 10 = 25</span></div>
+            <div class="calc-row"><span>三段齐全</span><span>安装 10 + 使用 10 + 许可 10 = 30</span></div>
+            <div class="calc-row"><span>状态徽章</span><span>shields.io → 5</span></div>
+            <div class="calc-row"><span>评分</span><span>clamp(40 + 25 + 30 + 5) = 100.0</span></div>
+          </div>
+        </details>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 5. 病史 ============ -->
+  <section class="history">
+    <div class="sec-h">
+      <h2>病史</h2>
+      <span class="num">2009 → 2026</span>
+    </div>
+    <ul class="tl">
+      <li class="now">
+        <div><span class="tl-date">2026-10-23</span><span class="tl-label">最近一次提交</span></div>
+        <p class="tl-desc">推送到 <code>master</code>。距今 2 天，人还在。</p>
+      </li>
+      <li>
+        <div><span class="tl-date">2026-10-10</span><span class="tl-label">最近一次发版</span></div>
+        <p class="tl-desc"><code>v5.3.0</code>。近 12 个月共 6 个版本，v4 与 v5 两条线同时维护。</p>
+      </li>
+      <li>
+        <div><span class="tl-date">近 12 个月</span><span class="tl-label">工作量分布</span></div>
+        <p class="tl-desc">96 次提交，43 位作者。单人最高占比 11.9%，没有任何一个月是空心的。</p>
+      </li>
+      <li>
+        <div><span class="tl-date">2009-06-26</span><span class="tl-label">建档</span></div>
+        <p class="tl-desc">第一次提交。项目年龄 17 年 4 个月。</p>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ============ 6. 治疗建议 ============ -->
+  <section class="advice">
+    <div class="sec-h">
+      <h2>治疗建议</h2>
+      <span class="num">3 条 · 无需住院</span>
+    </div>
+    <div class="ad-list">
+      <div class="ad">
+        <span class="pri p1">P1</span>
+        <div>
+          <h3 class="ad-title">把 253 个 issue 里的僵尸清一轮</h3>
+          <p class="ad-body">130 条超过 90 天没人动，占了 51.4%。这是六项里唯一的真问题，也是唯一能在两周内明显改分的项——给陈旧的批量打上 <code>status:stale</code>，重复的直接关，剩下的标注「等谁回复」。免疫从 40.6 拉到 70，健康分就能站上 90。</p>
+        </div>
+      </div>
+      <div class="ad">
+        <span class="pri p2">P2</span>
+        <div>
+          <h3 class="ad-title">把 43 个人里的一部分写进 CODEOWNERS</h3>
+          <p class="ad-body">依赖度 97.3 已经很漂亮，但它靠的是「人多」，不是「制度」。43 位作者里没有一位被显式指定为路径 owner，出事时仍然没人知道自己该审哪一块。加一份 <code>CODEOWNERS</code>，把 <code>lib/router</code> 这类核心目录绑定到具体人。</p>
+        </div>
+      </div>
+      <div class="ad">
+        <span class="pri p2">P2</span>
+        <div>
+          <h3 class="ad-title">别为了刷分堆提交，把 LTS 策略写清楚</h3>
+          <p class="ad-body">心跳和呼吸都是满分，继续加量没有收益。这个项目的真实风险不是「没人维护」，而是很多人以为它没人维护。把 v5 的支持窗口、v4 的 EOL 日期写进 README，比多发两个 patch 更能减少下游的恐慌。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7. 操作 ============ -->
+  <div class="actions">
+    <button class="btn btn-primary" type="button">
+      <svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>
+      导出病危通知书
+    </button>
+    <div class="actions-row">
+      <button class="btn btn-ghost" type="button">
+        <svg class="ic" aria-hidden="true"><use href="#i-rotate-ccw"/></svg>重新体检
+      </button>
+      <button class="btn btn-ghost" type="button">
+        <svg class="ic" aria-hidden="true"><use href="#i-copy"/></svg>复制结论
+      </button>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <span class="num">报告编号 EXPRESS-20261023 · 第 1 页 / 共 1 页</span>
+    <span>数据来源 GitHub REST API · 结论由公开数据自动生成，不构成代码审查意见。</span>
+  </footer>
+</main>
+
+</body>
+</html>

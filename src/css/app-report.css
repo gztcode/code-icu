@@ -1,0 +1,200 @@
+/* ==========================================================================
+   Code ICU · app-report.css
+   体检报告：患者档案 / 健康分 / 监护屏 / 六项体征 / 病史 / 治疗建议 / 操作
+   ========================================================================== */
+
+.report .sheet { margin-top: var(--space-4); }
+.report .sheet:first-of-type { margin-top: var(--space-4); }
+
+/* ---------- 1. 患者档案 ---------- */
+.patient { display: flex; gap: var(--space-4); padding: var(--space-4); }
+.avatar { position: relative; width: 52px; height: 52px; flex: none; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); background: var(--surface-inset); display: grid; place-items: center; }
+.avatar span { font-family: var(--font-mono); font-size: var(--text-md); font-weight: 700; color: var(--muted); }
+.p-id { min-width: 0; flex: 1 1 auto; }
+.p-owner { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--muted); word-break: break-word; }
+.p-name { font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 500; color: var(--fg); letter-spacing: -0.01em; line-height: 1.25; word-break: break-word; }
+.p-desc { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: 1.6; overflow-wrap: anywhere; }
+/* 头像 / 用户名 / 项目名都跳 GitHub：去掉链接默认下划线，用 hover 与 focus 反馈可点性 */
+.avatar-link { display: grid; place-items: center; }
+.avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.p-link { text-decoration: none; transition: color var(--motion-fast) var(--ease-standard); }
+.p-owner.p-link:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 2px; }
+.p-name.p-link:hover { color: var(--accent); }
+.p-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.avatar-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); padding: 0 var(--space-4) var(--space-4); }
+.meta-item { display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
+/* 建仓年龄独占一行：六格网格的尾巴留空比塞满更整齐，也把「年龄」从事实清单里拎出来 */
+.meta-item.meta-wide { grid-column: 1 / -1; }
+.meta-item .ic { color: var(--meta); margin-top: 1px; }
+.meta-k { font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: 0.1em; color: var(--meta); line-height: 1.4; }
+.meta-v { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--fg); line-height: 1.4; word-break: break-word; }
+
+/* ---------- 2. 健康分 ---------- */
+.score-sheet { padding: var(--space-5) var(--space-4) var(--space-4); }
+.score-main { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-4) var(--space-5); }
+.score-num-wrap { display: flex; align-items: baseline; gap: 6px; }
+.score-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-5xl); font-weight: 700; line-height: 0.86; color: var(--fg); letter-spacing: -0.02em; }
+.score-den { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--meta); }
+.score-right { flex: 1 1 200px; min-width: 0; }
+.score-diag { margin: var(--space-2) 0 0; font-size: var(--text-md); line-height: 1.55; color: var(--fg-2); letter-spacing: -0.008em; }
+.score-diag b { font-weight: 590; color: var(--fg); }
+
+.ruler { margin-top: var(--space-5); }
+.ruler-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.ruler-track { display: flex; gap: 2px; height: 9px; }
+.seg { border-radius: var(--radius-xs); opacity: 0.16; }
+.seg.on { opacity: 1; }
+.s-dead { background: var(--level-dead); }
+.s-icu { background: var(--level-icu); }
+.s-ward { background: var(--level-ward); }
+.s-clinic { background: var(--level-clinic); }
+.s-healthy { background: var(--level-healthy); }
+.ruler-labels { display: flex; gap: 2px; margin-top: 6px; }
+.ruler-labels > div { min-width: 0; }
+.rl { font-size: 10px; line-height: 1.3; color: var(--meta); letter-spacing: 0.02em; }
+.rl.on { color: var(--fg); font-weight: 590; }
+.rl-range { font-family: var(--font-mono); font-size: 9px; color: var(--meta); line-height: 1.4; }
+
+.prognosis { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px dashed var(--border-dash); display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-3); }
+.pg-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-2xl); font-weight: 700; line-height: 1; color: var(--fg); letter-spacing: -0.01em; }
+.pg-unit { font-size: var(--text-xs); color: var(--muted); }
+.pg-note { flex: 1 1 100%; margin: 0; font-size: var(--text-2xs); color: var(--meta); line-height: 1.6; }
+.pg-note code { font-family: var(--font-mono); color: var(--fg-2); }
+
+/* ---------- 3. 监护屏 ---------- */
+.monitor { margin: var(--space-4) 0 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.mon-hd { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: 10px var(--space-4); background: var(--surface-2); border-bottom: 1px solid var(--border); }
+.mon-read { font-family: var(--font-mono); font-size: var(--text-md); font-weight: 700; color: var(--fg); letter-spacing: -0.01em; }
+.mon-read em { font-family: var(--font-body); font-size: 10px; font-style: normal; color: var(--muted); font-weight: 400; margin-left: 3px; }
+.screen { position: relative; background: var(--monitor-bg); }
+/* min-height 必须 ≥ layoutMetrics 的 120px 下限，否则布局按 120 算、画布只有 96 高，基线会被裁到画布外面 */
+.screen canvas { display: block; width: 100%; height: auto; min-height: 120px; aspect-ratio: 720 / 208; }
+.mon-live { position: absolute; top: 8px; right: 10px; display: flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--monitor-trace); }
+.mon-live i { width: 5px; height: 5px; border-radius: var(--radius-full); background: var(--monitor-trace); animation: pulse 1.8s var(--ease-standard) infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.28; } }
+.mon-flat { position: absolute; top: 8px; left: 12px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; color: var(--monitor-alarm); }
+.mon-cap { padding: 10px var(--space-4) var(--space-4); display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--muted); }
+.mon-cap b { color: var(--fg-2); font-weight: 500; }
+
+/* ---------- 4. 六项体征（一张表里的六行，不是六张卡） ---------- */
+.vitals { margin-top: var(--space-8); }
+.sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.sec-h h2 { margin: 0; font-size: var(--text-lg); font-weight: 590; letter-spacing: var(--tracking-heading); }
+.sec-h .num { font-size: var(--text-2xs); color: var(--meta); }
+.vital-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+/* 年龄归一化说明：中性提示，不是警告条 —— 新项目不是病，别用告警色 */
+.vital-note { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 var(--space-3);
+  padding: var(--space-3) var(--space-4); border: 1px dashed var(--border-dash);
+  border-radius: var(--radius-md); background: var(--surface-2); color: var(--fg-2);
+  font-size: var(--text-sm); line-height: 1.6; }
+.vital-note .ic { color: var(--meta); margin-top: 2px; flex: none; }
+.vital { padding: var(--space-4); border-bottom: 1px dashed var(--border-dash); }
+.vital:last-child { border-bottom: 0; }
+.v-hd { display: flex; align-items: flex-start; gap: var(--space-3); }
+.v-ic { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--fg-2); }
+.v-title { flex: 1 1 auto; min-width: 0; }
+.v-title h3 { margin: 0; font-size: var(--text-base); font-weight: 590; line-height: 1.3; }
+.v-en { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; color: var(--meta); }
+.v-value { display: flex; align-items: baseline; gap: 3px; flex: none; }
+.v-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-lg); font-weight: 700; line-height: 1; color: var(--fg); }
+.v-unit { font-size: 10px; color: var(--muted); }
+.v-missing { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--meta); }
+.v-chiprow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-3); }
+.bars { display: flex; gap: 3px; flex: 1 1 auto; max-width: 420px; }
+.bars i { flex: 1 1 0; height: 6px; border-radius: var(--radius-xs); background: var(--surface-inset); }
+.bars i.on { background: var(--c); }
+.v-score { display: flex; align-items: center; gap: 6px; font-size: var(--text-2xs); color: var(--meta); flex: none; white-space: nowrap; }
+.v-score b { color: var(--fg-2); font-weight: 500; font-family: var(--font-mono); }
+.sdot { width: 6px; height: 6px; border-radius: var(--radius-xs); background: var(--c); flex: none; }
+.st { color: var(--c); font-weight: 500; letter-spacing: 0.04em; }
+.v-diag { margin: var(--space-3) 0 0; font-size: var(--text-sm); color: var(--fg-2); line-height: 1.6; }
+
+details.calc { margin-top: var(--space-3); }
+details.calc > summary { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; list-style: none; font-size: var(--text-xs); color: var(--accent); min-height: 28px; }
+details.calc > summary::-webkit-details-marker { display: none; }
+details.calc > summary .chev { transition: transform var(--motion-base) var(--ease-standard); }
+details.calc[open] > summary .chev { transform: rotate(180deg); }
+.calc-box { margin-top: 6px; padding: var(--space-3); background: var(--bg); border: 1px dashed var(--border-dash); border-radius: var(--radius-sm); }
+.calc-row { display: flex; gap: var(--space-3); justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed var(--border-soft); font-size: var(--text-xs); }
+.calc-row:last-child { border-bottom: 0; }
+.calc-row > span:first-child { color: var(--meta); flex: none; }
+.calc-row > span:last-child { color: var(--fg-2); text-align: right; font-family: var(--font-mono); }
+.calc-formula { margin: var(--space-2) 0 0; font-size: var(--text-xs); color: var(--muted); line-height: 1.65; }
+
+/* ---------- 5. 病史 ---------- */
+.history { margin-top: var(--space-8); padding: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.tl { list-style: none; margin: var(--space-4) 0 0; padding: 0 0 0 16px; border-left: 1px dashed var(--border-dash); }
+.tl li { position: relative; padding-bottom: var(--space-4); }
+.tl li:last-child { padding-bottom: 0; }
+.tl li::before { content: ""; position: absolute; left: -21px; top: 5px; width: 7px; height: 7px; background: var(--surface); border: 1px solid var(--border-dash); border-radius: var(--radius-xs); }
+.tl li.now::before { background: var(--accent); border-color: var(--accent); }
+.tl-date { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--fg); }
+.tl-label { font-size: var(--text-2xs); letter-spacing: 0.1em; color: var(--meta); font-family: var(--font-mono); margin-left: 8px; }
+.tl-desc { margin: 3px 0 0; font-size: var(--text-sm); color: var(--muted); line-height: 1.55; }
+.tl-desc code { font-family: var(--font-mono); font-size: 11px; color: var(--fg-2); }
+
+/* ---------- 6. 治疗建议 ---------- */
+.advice { margin-top: var(--space-8); }
+.ad-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.ad { display: grid; grid-template-columns: 34px 1fr; gap: var(--space-3); padding: var(--space-4); border-bottom: 1px dashed var(--border-dash); }
+.ad:last-child { border-bottom: 0; }
+.pri { display: inline-flex; align-items: center; justify-content: center; height: 20px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.06em; border: 1px solid currentColor; border-radius: var(--radius-xs); align-self: start; }
+.p0 { color: var(--alarm); }
+.p1 { color: var(--level-icu); }
+.p2 { color: var(--level-clinic); }
+.ad-title { margin: 0; font-size: var(--text-base); font-weight: 510; line-height: 1.45; color: var(--fg); }
+.ad-body { margin: 5px 0 0; font-size: var(--text-sm); color: var(--muted); line-height: 1.65; }
+.ad-body code { font-family: var(--font-mono); font-size: 11px; color: var(--fg-2); background: var(--surface-2); padding: 1px 4px; border-radius: var(--radius-xs); }
+
+/* ---------- 7. 操作 ---------- */
+.actions { margin-top: var(--space-8); padding-top: var(--space-5); border-top: 1px solid var(--border); }
+.actions-row { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+.actions-row .btn { flex: 1 1 0; min-width: 0; font-size: var(--text-sm); padding: 0 10px; }
+.report .btn-primary { width: 100%; }
+
+/* 顶栏动作 */
+.top-action { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 12px; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: var(--text-xs); color: var(--fg-2); cursor: pointer; font-family: var(--font-body); transition: border-color var(--motion-fast) var(--ease-standard); }
+/* 同一个类也用在 <a> 上（回首页），链接默认带下划线，要去掉 */
+a.top-action { text-decoration: none; }
+.top-action:hover { border-color: var(--fg-2); }
+
+/* 复制结论后的轻提示 */
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(8px); opacity: 0; pointer-events: none; padding: 10px 16px; background: var(--action); color: var(--action-on); border-radius: var(--radius-sm); font-size: var(--text-xs); z-index: var(--z-toast); transition: opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-standard); }
+.toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (min-width: 768px) {
+  .patient { padding: var(--space-5); gap: var(--space-5); }
+  .avatar { width: 64px; height: 64px; }
+  .p-name { font-size: var(--text-xl); }
+  .meta-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0 var(--space-5) var(--space-5); }
+  .score-sheet { padding: var(--space-6) var(--space-5) var(--space-5); }
+  .score-num { font-size: 88px; }
+  .score-diag { font-size: var(--text-lg); max-width: 30em; }
+  .vital { padding: var(--space-5); }
+  .v-hd { align-items: center; }
+  .v-diag { max-width: 46em; }
+  .history, .advice { margin-top: var(--space-12); }
+  .report .btn-primary { width: auto; min-width: 220px; }
+  .actions { display: flex; align-items: center; gap: var(--space-3); }
+  .actions-row { margin-top: 0; }
+  .mon-cap { font-size: var(--text-xs); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mon-live i { animation: none; }
+  .toast { transition: none; }
+}
+
+/* 移动端：所有可点元素撑到 44×44（WCAG 2.5.5）。桌面端保持稿子里的 36 / 28 紧凑节奏 */
+@media (max-width: 767px) {
+  .top-action { min-height: var(--touch-min); }
+  /* 品牌是回首页的入口，在二级页它是"唯一的路"，可点区域不能只有 26px */
+  .brand-home { min-height: var(--touch-min); }
+  details.calc > summary { min-height: var(--touch-min); }
+  .btn-sm { min-height: var(--touch-min); }
+  /* 患者档案卡的用户名与项目名：文本链接本身只有十几二十 px 高，
+     撑到 44px 会把「头像 + 名字 + 简介」的版面拉散，用负 margin 抵消掉撑开的高度。 */
+  .p-owner.p-link { display: inline-flex; align-items: center; min-height: var(--touch-min); margin-block: calc((var(--touch-min) - 14px) / -2); }
+  .p-name.p-link { display: inline-flex; align-items: center; min-height: var(--touch-min); margin-block: calc((var(--touch-min) - 24px) / -2); }
+}

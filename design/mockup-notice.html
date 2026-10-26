@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code ICU · 病危通知书 1080×1440</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Martian+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-tokens.css">
+<style>
+  /* 本页所有元素都用绝对定位，坐标与 design-spec.md 的 Canvas 绘制表 1:1 对应。
+     浏览器渲染 = 设计基准，Canvas 只要照抄坐标即可。 */
+  body { margin: 0; background: var(--monitor-bg); } /* 画布外底色：仅用于预览展示，沿用监护屏 token */
+  .stage { display: flex; justify-content: center; padding: 32px 0 64px; }
+  .hint { font-family: var(--font-mono); font-size: 11px; color: var(--monitor-muted);
+          text-align: center; margin: 0 0 20px; letter-spacing: 0.1em; }
+  .scaler { width: 100%; overflow-x: auto; }
+  /* .stage 的 justify-content 对 100% 宽的 .scaler 无效，居中要落在 .poster 自己身上 */
+  .poster { margin: 0 auto; }
+
+  .poster {
+    position: relative;
+    width: 1080px; height: 1440px;
+    flex: none;
+    background-color: var(--bg);
+    background-image: repeating-linear-gradient(
+      to bottom, transparent 0, transparent 39px,
+      var(--paper-rule) 39px, var(--paper-rule) 40px);
+    color: var(--fg);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  .frame, .org, .no, .rule1, .rule2, .kicker, .title, .lede, .tbl, .cell,
+  .lbl, .score, .den, .chip, .vrow, .vn, .vtrack, .vfill, .vs, .strip,
+  .concl, .advice, .sign, .s1, .s2, .s3, .stampbox, .foot-rule, .foot1, .foot2,
+  .tbl .vl, .tbl .hl, .strip .tag, .strip .rd { position: absolute; }
+  .ck, .cv, .sign .k, .sign .v { position: static; }
+
+  .frame { left: 36px; top: 36px; width: 1006px; height: 1366px;
+           border: 1px solid var(--border); }
+
+  /* ---- 红头 ---- */
+  .org  { left: 76px; top: 64px; font-size: 24px; font-weight: 600; letter-spacing: 10px;
+          color: var(--alarm); line-height: 1; }
+  .no   { right: 76px; top: 70px; font-family: var(--font-mono); font-size: 13px;
+          color: var(--muted); letter-spacing: 0.04em; line-height: 1; }
+  .rule1 { left: 76px; top: 104px; width: 928px; height: 3px; background: var(--alarm); }
+  .rule2 { left: 76px; top: 111px; width: 928px; height: 1px; background: var(--alarm); }
+
+  /* ---- 标题 ---- */
+  .kicker { left: 0; width: 1080px; top: 146px; text-align: center;
+            font-family: var(--font-mono); font-size: 12px; letter-spacing: 7px;
+            color: var(--alarm); line-height: 1; }
+  .title { left: 0; width: 1080px; top: 182px; text-align: center;
+           font-family: var(--font-serif-alt); font-size: 60px; font-weight: 500;
+           letter-spacing: 20px; text-indent: 20px; line-height: 1; color: var(--fg); }
+  .lede { left: 76px; top: 266px; width: 928px; font-size: 17px; line-height: 1.5;
+          color: var(--muted); }
+
+  /* ---- 患者信息表 ---- */
+  .tbl { left: 76px; top: 310px; width: 928px; height: 164px;
+         border: 1px solid var(--border); }
+  .tbl .vl { position: absolute; left: 464px; top: 0; width: 1px; height: 104px;
+             border-left: 1px dashed var(--border-dash); }
+  .tbl .hl { position: absolute; left: 0; width: 928px; height: 1px;
+             border-top: 1px dashed var(--border-dash); }
+  .cell { position: absolute; }
+  .ck { display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px;
+        color: var(--meta); line-height: 1; }
+  .cv { display: block; font-size: 18px; line-height: 1.2; color: var(--fg); margin-top: 8px; }
+  .cv.mono { font-family: var(--font-mono); font-size: 17px; letter-spacing: 0; }
+
+  /* ---- 健康分 ---- */
+  .lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px;
+         color: var(--meta); line-height: 1; }
+  .score { left: 76px; top: 512px; font-family: var(--font-mono); font-size: 160px;
+           font-weight: 700; line-height: 0.94; letter-spacing: -6px; color: var(--fg); }
+  .den { left: 292px; top: 638px; font-family: var(--font-mono); font-size: 20px;
+         color: var(--meta); line-height: 1; }
+  .chip { left: 76px; top: 706px; width: 172px; height: 38px; line-height: 36px;
+          text-align: center; font-family: var(--font-mono); font-size: 13px;
+          letter-spacing: 2px; color: var(--level-dead);
+          border: 1.5px solid var(--level-dead); border-radius: 2px; }
+
+  /* ---- 六项体征（右侧） ---- */
+  .vrow { left: 500px; width: 504px; height: 44px; }
+  .vn { left: 0; top: 14px; font-size: 15px; line-height: 1; color: var(--fg); }
+  .vtrack { left: 150px; top: 19px; width: 250px; height: 5px; background: var(--surface-inset); }
+  .vfill { left: 150px; top: 19px; height: 5px; }
+  .vs { right: 0; top: 12px; width: 60px; text-align: right;
+        font-family: var(--font-mono); font-size: 14px; line-height: 1; color: var(--fg-2); }
+
+  /* ---- 体征条 ---- */
+  .strip { left: 76px; top: 800px; width: 928px; height: 58px;
+           background: var(--monitor-bg); overflow: hidden; }
+  .strip svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .strip .tag { left: 12px; top: 8px; font-family: var(--font-mono); font-size: 9px;
+                letter-spacing: 0.16em; color: var(--monitor-muted); line-height: 1; }
+  .strip .rd { right: 12px; top: 8px; font-family: var(--font-mono); font-size: 9px;
+               letter-spacing: 0.1em; color: var(--monitor-trace); line-height: 1; }
+
+  /* ---- 结论 ---- */
+  .concl { left: 76px; top: 898px; width: 928px; font-family: var(--font-display);
+           font-size: 32px; line-height: 1.5; letter-spacing: -0.01em; color: var(--fg);
+           font-weight: 510; }
+  .advice { left: 76px; top: 1018px; width: 880px; font-size: 17px; line-height: 1.6;
+            color: var(--muted); }
+
+  /* ---- 落款 ---- */
+  .sign { right: 76px; text-align: right; }
+  .sign .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px;
+             color: var(--meta); line-height: 1; }
+  .sign .v { font-size: 17px; line-height: 1.3; color: var(--fg-2); margin-top: 6px; }
+  .s1 { top: 1116px; }
+  .s2 { top: 1166px; }
+  .s3 { top: 1214px; }
+
+  .stampbox { left: 606px; top: 1042px; width: 180px; height: 180px;
+              transform: rotate(-9deg); mix-blend-mode: multiply; opacity: 0.9; }
+
+  /* ---- 页脚 ---- */
+  .foot-rule { left: 76px; top: 1300px; width: 928px; height: 1px;
+               border-top: 1px dashed var(--border-dash); }
+  .foot1 { left: 76px; top: 1322px; width: 928px; font-size: 12px; line-height: 1.5; color: var(--meta); }
+  .foot2 { left: 76px; top: 1348px; font-family: var(--font-mono); font-size: 11px;
+           letter-spacing: 0.04em; color: var(--meta); line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<p class="hint" style="padding-top:32px">实际尺寸 1080 × 1440 · 下列坐标与 design-spec.md 的 Canvas 绘制表一一对应</p>
+
+<div class="stage">
+<div class="scaler">
+<div class="poster">
+
+  <div class="frame"></div>
+
+  <!-- 红头 -->
+  <div class="org">代码急诊科</div>
+  <div class="no">NO. EX-20110123</div>
+  <div class="rule1"></div>
+  <div class="rule2"></div>
+
+  <!-- 标题 -->
+  <div class="kicker">CRITICAL CONDITION NOTICE</div>
+  <div class="title">病危通知书</div>
+  <div class="lede">兹将下列仓库经六项生命体征检查后的结果，通知如下：</div>
+
+  <!-- 患者信息表 -->
+  <div class="tbl">
+    <div class="vl"></div>
+    <div class="hl" style="top:52px"></div>
+    <div class="hl" style="top:104px"></div>
+
+    <div class="cell" style="left:20px; top:10px; width:430px">
+      <span class="ck">患者 / PATIENT</span>
+      <span class="cv mono">request/request</span>
+    </div>
+    <div class="cell" style="left:484px; top:10px; width:430px">
+      <span class="ck">送检时间 / SAMPLED</span>
+      <span class="cv mono">2026-10-26 10:04</span>
+    </div>
+
+    <div class="cell" style="left:20px; top:62px; width:430px">
+      <span class="ck">病案号 / CASE NO.</span>
+      <span class="cv mono">EX-20110123</span>
+    </div>
+    <div class="cell" style="left:484px; top:62px; width:430px">
+      <span class="ck">主治 / ATTENDING</span>
+      <span class="cv">自动分诊系统 v1.0</span>
+    </div>
+
+    <div class="cell" style="left:20px; top:110px; width:888px">
+      <span class="ck">主诉 / CHIEF COMPLAINT</span>
+      <span class="cv">README 第一行写着 Deprecated，末次提交停在 803 天前，145 个 issue 没人接。</span>
+    </div>
+  </div>
+
+  <!-- 健康分 -->
+  <div class="lbl" style="left:76px; top:490px">健康分 / SCORE</div>
+  <div class="score">16</div>
+  <div class="den">/100</div>
+  <div class="chip">临床死亡 · DEAD</div>
+
+  <!-- 六项体征 -->
+  <div class="lbl" style="left:500px; top:490px">六项体征 / VITALS</div>
+
+  <div class="vrow" style="top:516px">
+    <span class="vn">心跳</span>
+    <span class="vtrack"></span><span class="vfill" style="width:0; background:var(--level-dead)"></span>
+    <span class="vs">0.0</span>
+  </div>
+  <div class="vrow" style="top:560px">
+    <span class="vn">呼吸频率</span>
+    <span class="vtrack"></span><span class="vfill" style="width:0; background:var(--level-dead)"></span>
+    <span class="vs">0.0</span>
+  </div>
+  <div class="vrow" style="top:604px">
+    <span class="vn">单人依赖度</span>
+    <span class="vtrack"></span><span class="vfill" style="width:50px; background:var(--level-dead)"></span>
+    <span class="vs">20.0</span>
+  </div>
+  <div class="vrow" style="top:648px">
+    <span class="vn">代谢</span>
+    <span class="vtrack"></span><span class="vfill" style="width:113px; background:var(--level-icu)"></span>
+    <span class="vs">45.0</span>
+  </div>
+  <div class="vrow" style="top:692px">
+    <span class="vn">免疫</span>
+    <span class="vtrack"></span><span class="vfill" style="width:0; background:var(--level-dead)"></span>
+    <span class="vs">0.0</span>
+  </div>
+  <div class="vrow" style="top:736px">
+    <span class="vn">遗嘱</span>
+    <span class="vtrack"></span><span class="vfill" style="width:175px; background:var(--level-icu)"></span>
+    <span class="vs">70.0</span>
+  </div>
+
+  <!-- 体征条 -->
+  <div class="strip">
+    <svg viewBox="0 0 720 208" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M8 104 L60 103.1 L120 105.2 L180 104.5 L240 103.2 L300 104.8 L360 103.4 L420 104.6 L480 103 L540 104.9 L600 103.6 L660 104.4 L712 104"
+            fill="none" style="stroke:var(--monitor-trace)" stroke-width="2"
+            vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    <div class="rd" style="color:var(--monitor-alarm)">0 / 年</div>
+  </div>
+
+  <!-- 结论 -->
+  <div class="lbl" style="left:76px; top:878px">诊断结论 / CONCLUSION</div>
+  <div class="concl">803 天没有一次提交，README 第一行还写着 Deprecated。<br>它可能还躺在你的 node_modules 里。</div>
+  <div class="advice">建议家属把依赖迁到原生 fetch 或 axios，并清理 lockfile 里的遗留引用。患者已无自主生命体征，仅遗嘱尚存。</div>
+
+  <!-- 落款 -->
+  <div class="sign s1"><div class="k">ISSUED BY</div><div class="v">代码急诊科 · 自动分诊系统</div></div>
+  <div class="sign s2"><div class="k">DATE</div><div class="v">2026 年 10 月 26 日</div></div>
+
+  <div class="lbl" style="left:76px; top:1116px">备注 / REMARKS</div>
+  <div style="position:absolute; left:76px; top:1140px; width:520px; font-size:15px; line-height:1.6; color:var(--muted)">患者距最后一次提交已 803 天。本通知书长期有效，除非有人在仓库里再提交一行代码。</div>
+
+  <!-- 印章 -->
+  <div class="stampbox">
+    <svg viewBox="0 0 210 210" width="180" height="180" role="img" aria-label="代码急诊科诊断专用章">
+      <g fill="none" style="stroke:var(--stamp)">
+        <circle cx="105" cy="105" r="99" stroke-width="6"/>
+        <circle cx="105" cy="105" r="58" stroke-width="1.6"/>
+      </g>
+      <defs>
+        <path id="arcTop" d="M 29,105 A 76,76 0 0,1 181,105"/>
+        <path id="arcBot" d="M 25,105 A 80,80 0 0,0 185,105"/>
+      </defs>
+      <!-- dy 与 src/js/views/notice.js 保持一致：<textPath> 把基线放在弧线上，
+           字会往外探半个字号、戳到外环；0.38em 把基线挪回字心位置，与 Canvas 版一致。 -->
+      <text dy="9.5" style="fill:var(--stamp);font-family:var(--font-display);font-size:25px;font-weight:600;letter-spacing:6px">
+        <textPath href="#arcTop" startOffset="50%" text-anchor="middle">代码急诊科</textPath>
+      </text>
+      <text dy="5.7" style="fill:var(--stamp);font-family:var(--font-display);font-size:15px;font-weight:500;letter-spacing:3px">
+        <textPath href="#arcBot" startOffset="50%" text-anchor="middle">诊断专用章</textPath>
+      </text>
+      <path style="fill:var(--stamp)"
+            d="M105 63 L114.87 91.41 L144.95 92.02 L120.98 110.19 L129.69 138.97 L105 121.8 L80.31 138.97 L89.02 110.19 L65.05 92.02 L95.13 91.41 Z"/>
+    </svg>
+  </div>
+
+
+  <!-- 页脚 -->
+  <div class="foot-rule"></div>
+  <div class="foot1">本通知书由 GitHub 公开 API 数据自动生成，不构成代码审查意见，也不构成医疗建议。</div>
+  <div class="foot2">CODE ICU · v1.0 · NO. EX-20110123 · 1 / 1</div>
+
+</div>
+</div>
+</div>
+
+</body>
+</html>

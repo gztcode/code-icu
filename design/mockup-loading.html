@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Code ICU · 正在体检</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Martian+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-tokens.css">
+<style>
+  .wrap { width: 100%; max-width: var(--container-narrow); margin: 0 auto; padding: 0 var(--gutter); }
+  .ic { width: 16px; height: 16px; flex: none; display: block; stroke: currentColor; fill: none;
+        stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .topbar { border-bottom: 1px solid var(--border); background: var(--bg); }
+  .topbar-in { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: var(--space-3); }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-bar { width: 3px; height: 26px; background: var(--accent); flex: none; }
+  .brand-name { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 700;
+                letter-spacing: 0.16em; line-height: 1; }
+  .brand-sub { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--meta);
+               margin-top: 5px; line-height: 1; }
+  .timer { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--muted); }
+
+  .head { padding: var(--space-8) 0 var(--space-5); }
+  .head h1 { margin: var(--space-3) 0 0; font-size: var(--text-xl); font-weight: 590;
+             letter-spacing: var(--tracking-heading); line-height: 1.3; }
+  .head h1.repo { font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 500;
+                  letter-spacing: -0.01em; word-break: break-all; }
+  .head p { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--muted); }
+  .head p .num { color: var(--fg-2); }
+
+  /* ---- 监护屏（实时滚动波形） ---- */
+  .lead { position: relative; height: 168px; background: var(--monitor-bg);
+          border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+  .lead svg { position: absolute; top: 0; left: 0; width: 200%; height: 100%;
+              animation: sweep var(--motion-sweep) linear infinite; }
+  @keyframes sweep { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+  .lead-mask { position: absolute; inset: 0; pointer-events: none;
+               background: linear-gradient(to right, var(--monitor-bg) 0%, transparent 14%, transparent 88%, var(--monitor-bg) 100%); }
+  .lead-now { position: absolute; top: 0; bottom: 0; right: 11%; width: 1px;
+              background: var(--monitor-alarm); opacity: 0.5; }
+  .lead-tag { position: absolute; top: 10px; left: 12px; display: flex; align-items: center; gap: 6px;
+              font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.16em; color: var(--monitor-trace); }
+  .lead-tag i { width: 5px; height: 5px; border-radius: var(--radius-full); background: var(--monitor-trace);
+                animation: blink 1.6s var(--ease-standard) infinite; }
+  @keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: 0.25 } }
+  .lead-hr { position: absolute; bottom: 10px; right: 12px; font-family: var(--font-mono);
+             font-size: 9px; letter-spacing: 0.1em; color: var(--monitor-muted); }
+
+  /* ---- 分步进度 ---- */
+  .steps { margin-top: var(--space-4); background: var(--surface); border: 1px solid var(--border);
+           border-radius: var(--radius-md); }
+  .step { display: grid; grid-template-columns: 26px 1fr auto; align-items: center;
+          gap: var(--space-3); padding: var(--space-3) var(--space-4);
+          border-bottom: 1px dashed var(--border-soft); position: relative; }
+  .step:last-child { border-bottom: 0; }
+  .step.done .s-name { color: var(--fg-2); }
+  .step.todo { opacity: 0.5; }
+
+  .s-dot { display: grid; place-items: center; width: 24px; height: 24px;
+           border: 1px solid var(--border-dash); border-radius: var(--radius-full); color: var(--meta); }
+  .step.done .s-dot { border-color: var(--accent); color: var(--accent); }
+  .step.active .s-dot { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .s-dot .num { font-family: var(--font-mono); font-size: 9px; }
+  .s-dot .spin { animation: spin 1.4s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg) } }
+
+  .s-main { min-width: 0; }
+  .s-name { font-size: var(--text-sm); font-weight: 510; color: var(--fg); line-height: 1.4; }
+  .s-api { font-family: var(--font-mono); font-size: 10px; color: var(--meta); margin-top: 2px;
+           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .s-out { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-align: right; white-space: nowrap; }
+  .step.done .s-out { color: var(--accent); }
+
+  .step.active { background: var(--surface-2); }
+  .step.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+                        background: linear-gradient(to right, transparent, var(--accent), transparent);
+                        background-size: 40% 100%; background-repeat: no-repeat;
+                        animation: slide 1.6s var(--ease-standard) infinite; }
+  @keyframes slide { from { background-position: -40% 0 } to { background-position: 140% 0 } }
+
+  /* ---- 底部 ---- */
+  .bar-wrap { margin-top: var(--space-4); }
+  .bar-track { height: 3px; background: var(--surface-inset); border-radius: var(--radius-full); overflow: hidden; }
+  .bar-fill { height: 100%; width: 46%; background: var(--accent); border-radius: var(--radius-full); }
+  .bar-meta { display: flex; justify-content: space-between; margin-top: var(--space-2);
+              font-family: var(--font-mono); font-size: 10px; color: var(--meta); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+         min-height: var(--touch-min); padding: 0 16px; border-radius: var(--radius-sm);
+         font-family: var(--font-body); font-size: var(--text-sm); font-weight: 510;
+         background: transparent; color: var(--muted); border: 1px solid var(--border); cursor: pointer;
+         transition: border-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard); }
+  .btn:hover { border-color: var(--fg-2); color: var(--fg-2); }
+  .cancel { margin-top: var(--space-5); }
+
+  .foot { margin-top: var(--space-8); padding: var(--space-4) 0 var(--space-10);
+          border-top: 1px solid var(--border); font-size: var(--text-xs); color: var(--meta); }
+
+  /* 窄屏下 API 路径完整折行，不裁切——这一行是"数据从哪来"的证据，不能省略 */
+  @media (max-width: 560px) {
+    .step { grid-template-columns: 24px 1fr; row-gap: var(--space-2); }
+    .s-out { grid-column: 2; text-align: left; }
+    .s-api { white-space: normal; overflow: visible; overflow-wrap: anywhere; text-overflow: clip; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lead svg { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-loader" viewBox="0 0 24 24"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <div class="brand">
+      <span class="brand-bar" aria-hidden="true"></span>
+      <div>
+        <div class="brand-name">CODE ICU</div>
+        <div class="brand-sub">检查中 / IN PROGRESS</div>
+      </div>
+    </div>
+    <span class="timer num">00:04.2</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="head">
+    <span class="label">SCANNING · 正在体检</span>
+    <h1 class="repo">expressjs/express</h1>
+    <p>已推上检查床，正在按顺序采集 5 组公开数据。别关标签页，采集完会自动出报告。</p>
+  </div>
+
+  <!-- 实时波形 -->
+  <div class="lead" aria-hidden="true">
+    <svg viewBox="0 0 1440 208" preserveAspectRatio="none" style="stroke:var(--monitor-trace);fill:none;
+         stroke-width:2;stroke-linejoin:round;stroke-linecap:round" vector-effect="non-scaling-stroke">
+      <g vector-effect="non-scaling-stroke">
+        <path vector-effect="non-scaling-stroke" d="M8 148 Q12 144.29 16 148 L21 148 L25.5 152.57 L30.5 119.43 L35.5 156.57 L40 148 L44 148 Q48 140.57 53 148 L66.67 148 Q70.67 142.43 74.67 148 L79.67 148 L84.17 154.86 L89.17 105.14 L94.17 160.86 L98.67 148 L102.67 148 Q106.67 136.86 111.67 148 L125.33 148 Q129.33 139.64 133.33 148 L138.33 148 L142.83 158.29 L147.83 83.71 L152.83 167.29 L157.33 148 L161.33 148 Q165.33 131.29 170.33 148 L184 148 Q188 143.36 192 148 L197 148 L201.5 153.71 L206.5 112.29 L211.5 158.71 L216 148 L220 148 Q224 138.71 229 148 L242.67 148 Q246.67 136.86 250.67 148 L255.67 148 L260.17 161.71 L265.17 62.29 L270.17 173.71 L274.67 148 L278.67 148 Q282.67 125.71 287.67 148 L301.33 148 Q305.33 135 309.33 148 L314.33 148 L318.83 164 L323.83 48 L328.83 178 L333.33 148 L337.33 148 Q341.33 122 346.33 148 L360 148 Q364 137.79 368 148 L373 148 L377.5 160.57 L382.5 69.43 L387.5 171.57 L392 148 L396 148 Q400 127.57 405 148 L418.67 148 Q422.67 140.57 426.67 148 L431.67 148 L436.17 157.14 L441.17 90.86 L446.17 165.14 L450.67 148 L454.67 148 Q458.67 133.14 463.67 148 L477.33 148 Q481.33 141.5 485.33 148 L490.33 148 L494.83 156 L499.83 98 L504.83 163 L509.33 148 L513.33 148 Q517.33 135 522.33 148 L536 148 Q540 139.64 544 148 L549 148 L553.5 158.29 L558.5 83.71 L563.5 167.29 L568 148 L572 148 Q576 131.29 581 148 L594.67 148 Q598.67 142.43 602.67 148 L607.67 148 L612.17 154.86 L617.17 105.14 L622.17 160.86 L626.67 148 L630.67 148 Q634.67 136.86 639.67 148 L653.33 148 Q657.33 143.36 661.33 148 L666.33 148 L670.83 153.71 L675.83 112.29 L680.83 158.71 L685.33 148 L689.33 148 Q693.33 138.71 698.33 148 L712 148"/>
+        <path vector-effect="non-scaling-stroke" transform="translate(720 0)" d="M8 148 Q12 144.29 16 148 L21 148 L25.5 152.57 L30.5 119.43 L35.5 156.57 L40 148 L44 148 Q48 140.57 53 148 L66.67 148 Q70.67 142.43 74.67 148 L79.67 148 L84.17 154.86 L89.17 105.14 L94.17 160.86 L98.67 148 L102.67 148 Q106.67 136.86 111.67 148 L125.33 148 Q129.33 139.64 133.33 148 L138.33 148 L142.83 158.29 L147.83 83.71 L152.83 167.29 L157.33 148 L161.33 148 Q165.33 131.29 170.33 148 L184 148 Q188 143.36 192 148 L197 148 L201.5 153.71 L206.5 112.29 L211.5 158.71 L216 148 L220 148 Q224 138.71 229 148 L242.67 148 Q246.67 136.86 250.67 148 L255.67 148 L260.17 161.71 L265.17 62.29 L270.17 173.71 L274.67 148 L278.67 148 Q282.67 125.71 287.67 148 L301.33 148 Q305.33 135 309.33 148 L314.33 148 L318.83 164 L323.83 48 L328.83 178 L333.33 148 L337.33 148 Q341.33 122 346.33 148 L360 148 Q364 137.79 368 148 L373 148 L377.5 160.57 L382.5 69.43 L387.5 171.57 L392 148 L396 148 Q400 127.57 405 148 L418.67 148 Q422.67 140.57 426.67 148 L431.67 148 L436.17 157.14 L441.17 90.86 L446.17 165.14 L450.67 148 L454.67 148 Q458.67 133.14 463.67 148 L477.33 148 Q481.33 141.5 485.33 148 L490.33 148 L494.83 156 L499.83 98 L504.83 163 L509.33 148 L513.33 148 Q517.33 135 522.33 148 L536 148 Q540 139.64 544 148 L549 148 L553.5 158.29 L558.5 83.71 L563.5 167.29 L568 148 L572 148 Q576 131.29 581 148 L594.67 148 Q598.67 142.43 602.67 148 L607.67 148 L612.17 154.86 L617.17 105.14 L622.17 160.86 L626.67 148 L630.67 148 Q634.67 136.86 639.67 148 L653.33 148 Q657.33 143.36 661.33 148 L666.33 148 L670.83 153.71 L675.83 112.29 L680.83 158.71 L685.33 148 L689.33 148 Q693.33 138.71 698.33 148 L712 148"/>
+      </g>
+    </svg>
+    <div class="lead-mask"></div>
+    <div class="lead-now"></div>
+    <div class="lead-tag"><i></i>SCANNING</div>
+    <div class="lead-hr">LEAD II · 25 mm/s</div>
+  </div>
+
+  <!-- 分步进度 -->
+  <div class="steps" role="status" aria-live="polite">
+    <div class="step done">
+      <div class="s-dot"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></div>
+      <div class="s-main">
+        <div class="s-name">读取仓库档案</div>
+        <div class="s-api">GET /repos/expressjs/express</div>
+      </div>
+      <div class="s-out">200 · 118ms</div>
+    </div>
+
+    <div class="step done">
+      <div class="s-dot"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></div>
+      <div class="s-main">
+        <div class="s-name">采集近 12 个月提交</div>
+        <div class="s-api">GET /repos/expressjs/express/commits?since=2025-10-26</div>
+      </div>
+      <div class="s-out">96 次</div>
+    </div>
+
+    <div class="step active">
+      <div class="s-dot"><svg class="ic spin" aria-hidden="true"><use href="#i-loader"/></svg></div>
+      <div class="s-main">
+        <div class="s-name">计算发版代谢</div>
+        <div class="s-api">GET /repos/expressjs/express/releases?per_page=10</div>
+      </div>
+      <div class="s-out">第 3 / 5 步</div>
+    </div>
+
+    <div class="step todo">
+      <div class="s-dot"><span class="num">04</span></div>
+      <div class="s-main">
+        <div class="s-name">评估免疫（未关闭 issue）</div>
+        <div class="s-api">GET /repos/expressjs/express/issues?state=open&amp;sort=updated</div>
+      </div>
+      <div class="s-out">等待中</div>
+    </div>
+
+    <div class="step todo">
+      <div class="s-dot"><span class="num">05</span></div>
+      <div class="s-main">
+        <div class="s-name">检查遗嘱（README 完整度）</div>
+        <div class="s-api">GET /repos/expressjs/express/readme</div>
+      </div>
+      <div class="s-out">等待中</div>
+    </div>
+  </div>
+
+  <div class="bar-wrap">
+    <div class="bar-track"><div class="bar-fill"></div></div>
+    <div class="bar-meta">
+      <span>已完成 2 / 5 · 预计还需 2 秒</span>
+      <span>46%</span>
+    </div>
+  </div>
+
+  <button class="btn cancel" type="button">
+    <svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>取消检查
+  </button>
+
+  <footer class="foot">
+    如果卡在这一步超过 15 秒，多半是 GitHub 限流了。可以等一下，或者先看一份现成病例。
+  </footer>
+</main>
+
+</body>
+</html>

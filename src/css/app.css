@@ -1,0 +1,203 @@
+/* ==========================================================================
+   Code ICU · app.css
+   基础层 + 骨架 + 通用组件 + 首页（输入台）
+   颜色只能来自 tokens.css 的 CSS 变量，本文件不出现任何裸 hex。
+   ========================================================================== */
+
+/* ---------- 图标（几何由 sprite 的 symbol 提供，描边与颜色在这里统一注入） ---------- */
+.ic {
+  width: 16px; height: 16px; flex: none; display: block;
+  stroke: currentColor; fill: none;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.ic-20 { width: 20px; height: 20px; }
+.ic-24 { width: 24px; height: 24px; }
+.ic-spin { animation: ic-spin 1.4s linear infinite; }
+@keyframes ic-spin { to { transform: rotate(360deg); } }
+
+/* ---------- 骨架 ---------- */
+.wrap { width: 100%; max-width: var(--container-max); margin: 0 auto; padding: 0 var(--gutter); }
+.wrap.narrow { max-width: var(--container-narrow); }
+
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+
+.topbar { border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: var(--z-sticky); }
+.topbar-in { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: var(--space-3); }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+/* 品牌在非首页时就是「回首页」的入口：要去下划线、加手型、hover 给个反馈 */
+.brand-home { text-decoration: none; color: inherit; cursor: pointer; }
+.brand-home:hover .brand-name { color: var(--accent); }
+.brand-bar { width: 3px; height: 26px; background: var(--accent); flex: none; }
+.brand-name { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.16em; line-height: 1; }
+.brand-sub { display: flex; align-items: baseline; font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--meta); margin-top: 5px; line-height: 1.2; white-space: nowrap; overflow: hidden; }
+/* 编号是次要信息：窄屏下两个操作按钮横排会挤掉副标题。
+   身份（「体检报告」/「病危通知书」）是 flex: none，永远完整；
+   编号是 flex: 0 1 auto，空间不够时先被省略 —— 而编号在主体区另有完整版。 */
+.brand-sub-identity { flex: none; }
+.brand-sub-meta { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; padding-left: 7px; }
+.chart-no { text-align: right; display: flex; flex-direction: column; gap: 3px; flex: none; }
+.chart-no .num { font-size: var(--text-2xs); color: var(--fg-2); }
+/* 顶栏右侧放操作按钮时用这个槽位：横排一行。
+   .chart-no 是竖排（首页那两行「表单 / 入院登记」标签要竖着），按钮塞进去会叠成竖列，
+   所以按钮组单独一个类，明确 flex-direction: row。 */
+.top-actions { display: flex; flex-direction: row; align-items: center; gap: var(--space-2); flex: none; }
+
+/* ---------- 按钮（主按钮墨黑，绿色只属于生命体征） ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: var(--touch-min); padding: 0 18px; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: var(--text-base); font-weight: 510; letter-spacing: 0.01em;
+  cursor: pointer; border: 1px solid transparent; text-decoration: none;
+  transition: background-color var(--motion-fast) var(--ease-standard),
+              border-color var(--motion-fast) var(--ease-standard),
+              color var(--motion-fast) var(--ease-standard),
+              transform var(--motion-instant) var(--ease-standard);
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--action); color: var(--action-on); }
+.btn-primary:hover:not(:disabled) { background: var(--action-hover); }
+.btn-ghost { background: transparent; color: var(--fg-2); border-color: var(--border); }
+.btn-ghost:hover:not(:disabled) { border-color: var(--fg-2); background: var(--surface-2); }
+.btn-sm { min-height: 36px; padding: 0 12px; font-size: var(--text-xs); }
+
+/* ---------- Chi（等级徽章）与状态点 ---------- */
+.chip {
+  display: inline-flex; align-items: center; height: 22px; padding: 0 8px;
+  font-family: var(--font-mono); font-size: var(--text-2xs); font-weight: 500;
+  letter-spacing: 0.06em; border: 1px solid currentColor; border-radius: var(--radius-xs); white-space: nowrap;
+}
+.chip-lg { height: 26px; padding: 0 10px; font-size: 11px; }
+.c-healthy { color: var(--level-healthy); }
+.c-clinic  { color: var(--level-clinic); }
+.c-ward    { color: var(--level-ward); }
+.c-icu     { color: var(--level-icu); }
+.c-dead    { color: var(--level-dead); }
+
+/* ---------- 纸表单 ---------- */
+.sheet { margin-top: var(--space-6); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.sheet-head {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding: 9px var(--space-4); background: var(--surface-2); border-bottom: 1px solid var(--border);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+.sheet-head .num { font-size: var(--text-2xs); color: var(--muted); }
+.sheet-body { padding: var(--space-5) var(--space-4); }
+
+/* ---------- 输入 ---------- */
+.field-label { display: block; font-size: var(--text-sm); font-weight: 510; color: var(--fg-2); margin-bottom: var(--space-2); }
+.field-label .en { font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: 0.12em; color: var(--meta); margin-left: 6px; }
+.input-row { display: flex; gap: var(--space-2); }
+.input-shell {
+  flex: 1 1 auto; min-width: 0; display: flex; align-items: center;
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  transition: border-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard);
+}
+.input-shell:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.input-shell.is-error { border-color: var(--alarm); }
+.input-shell.is-error:focus-within { box-shadow: 0 0 0 3px var(--alarm-soft); }
+.input-prefix {
+  font-family: var(--font-mono); font-size: var(--text-xs); color: var(--meta);
+  padding-left: var(--space-3); padding-right: 10px; margin-right: 10px;
+  border-right: 1px dashed var(--border-dash); line-height: 1.2; flex: none;
+}
+.input-shell input {
+  flex: 1 1 auto; min-width: 0; border: 0; background: transparent;
+  font-family: var(--font-mono); font-size: var(--text-base); color: var(--fg);
+  padding: 12px 12px 12px 0; min-height: var(--touch-min); outline: none; letter-spacing: 0;
+}
+.input-shell input::placeholder { color: var(--meta); }
+.hint { margin: var(--space-3) 0 0; font-size: var(--text-xs); color: var(--meta); line-height: 1.6; }
+.hint code { font-family: var(--font-mono); font-size: 11px; background: var(--surface-2); padding: 1px 5px; border-radius: var(--radius-xs); color: var(--fg-2); }
+.field-error { display: none; margin: var(--space-2) 0 0; font-size: var(--text-xs); color: var(--alarm); line-height: 1.6; }
+.field-error.on { display: block; }
+
+/* ---------- 首页 ---------- */
+.hero { padding-top: var(--space-10); padding-bottom: var(--space-8); }
+.hero h1 { margin: var(--space-4) 0 0; font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 590; line-height: var(--leading-heading); letter-spacing: var(--tracking-display); color: var(--fg); text-wrap: balance; }
+.lede { margin: var(--space-4) 0 0; max-width: 34em; color: var(--muted); font-size: var(--text-base); line-height: var(--leading-body); }
+.lede strong { color: var(--fg-2); font-weight: 510; }
+.ecg-signature { display: block; width: 100%; height: 26px; margin-top: var(--space-6); fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; opacity: 0.9; }
+
+.examples { margin-top: var(--space-12); }
+.sec-head h2 { margin: 0; font-size: var(--text-lg); font-weight: 590; letter-spacing: var(--tracking-heading); color: var(--fg); }
+.sec-sub { margin: 6px 0 0; font-size: var(--text-sm); color: var(--muted); }
+.case-list { margin-top: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.case {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  width: 100%; min-height: 72px; text-align: left; padding: var(--space-4); background: transparent;
+  border: 0; border-bottom: 1px dashed var(--border-dash); cursor: pointer; font-family: inherit;
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+.case:last-child { border-bottom: 0; }
+.case:hover { background: var(--surface-2); }
+.case-main { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.case-repo { font-size: var(--text-sm); color: var(--fg); font-weight: 500; word-break: break-word; }
+.case:hover .case-repo { color: var(--accent); }
+.case-desc { font-size: var(--text-xs); color: var(--muted); line-height: 1.5; }
+.case-side { display: flex; align-items: center; gap: var(--space-3); flex: none; }
+.case-score { font-size: var(--text-md); font-weight: 700; line-height: 1; }
+.case .chev { color: var(--meta); transition: transform var(--motion-fast) var(--ease-standard); }
+.case:hover .chev { transform: translateX(2px); color: var(--fg-2); }
+
+.doc { margin-top: var(--space-8); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.doc > summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-4); cursor: pointer; list-style: none; min-height: var(--touch-min); }
+.doc > summary::-webkit-details-marker { display: none; }
+.sum-left { display: flex; align-items: center; gap: 10px; font-size: var(--text-base); font-weight: 510; color: var(--fg); }
+.sum-left .ic { color: var(--accent); }
+.sum-right { display: flex; align-items: center; gap: 8px; color: var(--meta); }
+.sum-right .chev { transition: transform var(--motion-base) var(--ease-standard); }
+.doc[open] .sum-right .chev { transform: rotate(180deg); }
+.doc-body { padding: 0 var(--space-4) var(--space-4); border-top: 1px dashed var(--border-dash); }
+.vit-list { margin: 0; padding: 0; list-style: none; }
+.vit-item { display: grid; grid-template-columns: 20px 1fr; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px dashed var(--border-soft); }
+.vit-item:last-child { border-bottom: 0; }
+.vit-item .ic { color: var(--fg-2); margin-top: 2px; }
+.vit-name { font-size: var(--text-sm); font-weight: 510; color: var(--fg); }
+.vit-en { font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: 0.1em; color: var(--meta); margin-left: 7px; }
+.vit-desc { margin: 3px 0 0; font-size: var(--text-sm); color: var(--muted); line-height: 1.6; }
+
+.privacy { display: grid; grid-template-columns: 20px 1fr; gap: var(--space-3); margin-top: var(--space-8); padding: var(--space-4); background: var(--accent-soft); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.privacy .ic { color: var(--accent); margin-top: 2px; }
+.privacy p { margin: 0; font-size: var(--text-sm); color: var(--fg-2); line-height: 1.7; }
+.privacy strong { font-weight: 590; }
+.privacy code { font-family: var(--font-mono); font-size: 11px; color: var(--fg); }
+
+/* 选填 PAT：默认收在 details 里，不干扰主路径 */
+.token { margin-top: var(--space-4); }
+.token > summary { display: flex; align-items: center; gap: 7px; min-height: var(--touch-min); cursor: pointer; list-style: none; font-size: var(--text-xs); color: var(--muted); }
+.token > summary::-webkit-details-marker { display: none; }
+.token > summary:hover { color: var(--fg-2); }
+.token-box { padding: var(--space-3); background: var(--surface); border: 1px dashed var(--border-dash); border-radius: var(--radius-sm); }
+.token-box .input-shell input { font-size: var(--text-xs); }
+.token-state { margin: var(--space-2) 0 0; font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--meta); }
+/* summary 里的「GitHub Token」是去账号设置的入口，得像链接，但不能继承 summary 的整行交互 */
+.token-link {
+  color: var(--accent); text-decoration: underline; text-underline-offset: 2px;
+  /* 它是 summary 行里的独立可点元素，不能只有一行文字那么高（实测 14px）——
+     拉伸到 summary 整行高度后才有 ≥44px 的可点区域，文字仍垂直居中。 */
+  align-self: stretch; display: inline-flex; align-items: center;
+}
+.token-link:hover { text-decoration-thickness: 2px; }
+.token-help { margin: var(--space-2) 0 0; font-size: var(--text-2xs); color: var(--muted); line-height: 1.7; }
+.token-help a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.token-help code { font-family: var(--font-mono); font-size: 11px; background: var(--surface-2); padding: 1px 5px; border-radius: var(--radius-xs); color: var(--fg-2); }
+
+.foot { margin-top: var(--space-12); padding: var(--space-5) 0 var(--space-10); border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); justify-content: space-between; font-size: var(--text-xs); color: var(--meta); }
+.noscript { padding: var(--space-8) var(--gutter); font-size: var(--text-base); color: var(--fg-2); }
+
+@media (min-width: 768px) {
+  .hero { padding-top: var(--space-16); }
+  .hero h1 { font-size: var(--text-4xl); }
+  .lede { font-size: var(--text-md); }
+  .sheet-body { padding: var(--space-6); }
+  .input-row { gap: var(--space-3); }
+  .case { padding: var(--space-5) var(--space-6); }
+  .case-main { flex-direction: row; align-items: baseline; gap: var(--space-4); }
+  .case-repo { font-size: var(--text-base); }
+  .case-desc { font-size: var(--text-sm); }
+}
+@media (max-width: 479px) {
+  .input-row { flex-direction: column; }
+  .input-row .btn-primary { width: 100%; }
+}
