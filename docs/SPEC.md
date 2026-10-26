@@ -606,3 +606,53 @@ Canvas 的 `textBaseline='middle'` 把**字心**放在弧上（墨迹只到 r=76
 | `request/request` | `created_at` 2011-01-23 → 病案号 `EX-20110123` | 夹具 repo |
 | `request/request` | open issues 145，末次提交 2024-08-14 | 夹具 repo |
 | 其他三个示例 | 许可证均为 MIT | 夹具 repo |
+
+---
+
+## 15. 部署与发布（2026-10-26 锁定）
+
+### 15.1 托管平台
+
+| 项 | 值 |
+|---|---|
+| 平台 | GitHub Pages |
+| 仓库 | `github.com/gztcode/code-icu`（public） |
+| 线上地址 | `https://gztcode.github.io/code-icu/` |
+| 产物根目录 | `src/`（源码即产物，零构建） |
+| 发布方式 | 推送 `main` → GitHub Actions 自动发布 |
+| 关闭 Jekyll | `src/.nojekyll` |
+
+路由为 Hash 路由（`#/r/{owner}/{repo}`），全部静态资源用相对路径引用，因此部署在子目录下无需任何 rewrite 规则。
+
+### 15.2 发布流水线
+
+`.github/workflows/deploy.yml` 两个 job：
+
+1. **部署到 Pages** —— `src/` → `upload-pages-artifact` → `deploy-pages`
+2. **部署后冒烟** —— 校验 19 个关键静态资源返回 200 + 首页内容完整；失败只告警（`continue-on-error`），不阻塞已完成的发布
+
+触发条件：`src/**`、`assets/**`、workflow 文件变更时自动触发，也支持手动 `workflow_dispatch`。
+
+### 15.3 发布后验证清单
+
+每次发布后跑 `node tests/online-smoke.mjs https://gztcode.github.io/code-icu/`，覆盖：
+
+- 首页渲染（标题、输入框、3 个示例按钮、品牌区可点回首页）
+- 报告页（项目名 / 用户名 / 头像三个外链指向 GitHub、健康分渲染、「回首页」存在）
+- 通知书页（印章渲染、「返回报告」「回首页」存在）
+- PNG 导出可落盘（1080×1440）
+- 交互连通性（点击示例进报告页、返回报告、回首页）
+- 无 JS 运行时错误
+
+### 15.4 本机推送通道（本环境特有）
+
+本机到 `github.com:443` 被代理拦截（502），SSH 公钥因 `gh` token 缺 `admin:public_key` scope 未能上传，因此推送走 **GitHub Git Database API**（建 blob → tree → commit → ref），脚本逻辑见 ADR-002。
+
+恢复标准 `git push` 的步骤：
+
+```bash
+gh auth refresh -h github.com -s admin:public_key   # 浏览器确认授权
+gh ssh-key add ~/.ssh/id_ed25519_github_codeicu.pub --title "code-icu macOS"
+```
+
+`~/.ssh/config` 已配置 `github.com` → `ssh.github.com:443`（端口 22 不通，443 已登记于 `known_hosts`）。
