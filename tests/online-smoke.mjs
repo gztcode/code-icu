@@ -119,6 +119,46 @@ const realErrors = jsErrors.filter(
 );
 check('无 JS 运行时错误', realErrors.length === 0, realErrors.slice(0, 3).join(' | '));
 
+/* ---------------- 7. PWA 与离线 ---------------- */
+console.log('\n[7] PWA 与离线');
+const manifestHref = await page.getAttribute('link[rel="manifest"]', 'href');
+check('线上引用了 manifest', !!manifestHref, manifestHref ?? '(无)');
+const manifest = await page.evaluate(async (href) => {
+  const res = await fetch(href);
+  return { status: res.status, body: await res.json() };
+}, manifestHref);
+check('manifest 可加载且是合法 JSON', manifest.status === 200 && !!manifest.body.name, manifest.body?.name);
+check('manifest display 为 standalone', manifest.body.display === 'standalone', manifest.body.display);
+const iconOk = await page.evaluate(async (icons) => {
+  for (const i of icons) {
+    const res = await fetch(i.src);
+    if (!res.ok) return false;
+  }
+  return true;
+}, manifest.body.icons ?? []);
+check('manifest 里每个图标都能取到', iconOk);
+
+const swState = await page.evaluate(async () => {
+  const reg = await navigator.serviceWorker.getRegistration();
+  if (!reg) return { registered: false };
+  await navigator.serviceWorker.ready;
+  return { registered: true, active: !!reg.active };
+});
+check('Service Worker 已激活', swState.active === true, JSON.stringify(swState));
+
+// 断网后仍能打开：SW 缓存了全部站点资源
+await page.reload({ waitUntil: 'load' }); // 让 SW 接管页面
+await ctx.setOffline(true);
+let offlineOk = false;
+try {
+  await page.reload({ waitUntil: 'load', timeout: 20000 });
+  offlineOk = (await page.locator('.hero h1').count()) > 0;
+} catch {
+  offlineOk = false;
+}
+await ctx.setOffline(false);
+check('断网后仍能打开（缓存生效）', offlineOk);
+
 await browser.close();
 console.log(`\n线上冒烟: ${pass} 通过 / ${fail} 失败`);
 process.exit(fail ? 1 : 0);

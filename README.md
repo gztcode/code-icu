@@ -185,13 +185,13 @@ UI 与印章测试需要 Playwright：
 npm i playwright && npx playwright install chromium
 ```
 
-线上冒烟测试直接打真实部署地址，验证部署链路本身（资源可达、路由可用、PNG 可导出、无 JS 错误）：
+线上冒烟测试直接打真实部署地址，验证部署链路本身（资源可达、路由可用、PNG 可导出、无 JS 错误、PWA 与离线可用，共 23 项）：
 
 ```bash
 node tests/online-smoke.mjs https://gztcode.github.io/code-icu/
 ```
 
-发行包冒烟测试则解压桌面包、起本地服务器、用真实浏览器验证 PWA 能力（manifest / Service Worker / 缓存 / 交互）：
+发行包冒烟测试则解压桌面包、起本地服务器、用真实浏览器验证 PWA 能力（manifest / Service Worker / 缓存 / 交互），共 12 项：
 
 ```bash
 npm run pack && node tests/package-smoke.mjs
