@@ -73,3 +73,18 @@ function paint() {
 onChange(paint);
 paintThemeColor();
 paint();
+registerServiceWorker();
+
+/**
+ * 注册 Service Worker，让站点可安装为桌面应用、离线可打开。
+ *
+ * 失败必须静默：SW 是增强项，不是必需项，注册不上（file:// 协议、非安全上下文、
+ * 用户禁用了 Service Worker）都不该影响体检功能。
+ */
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol === 'file:') return;
+  navigator.serviceWorker.register('./sw.js').catch(() => {
+    /* 装不了就不装，页面照常工作 */
+  });
+}

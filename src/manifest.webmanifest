@@ -1,0 +1,53 @@
+{
+  "name": "Code ICU · 代码急诊科",
+  "short_name": "Code ICU",
+  "description": "把 GitHub 仓库当成病人，读取公开数据算六项生命体征，开一张病危通知书。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "id": "/code-icu/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait-primary",
+  "background_color": "#0E1613",
+  "theme_color": "#0E1613",
+  "categories": ["developer", "utilities", "productivity"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "体检 expressjs/express",
+      "short_name": "express",
+      "url": "./#/r/expressjs/express"
+    },
+    {
+      "name": "体检 moment/moment",
+      "short_name": "moment",
+      "url": "./#/r/moment/moment"
+    },
+    {
+      "name": "体检 request/request",
+      "short_name": "request",
+      "url": "./#/r/request/request"
+    }
+  ]
+}

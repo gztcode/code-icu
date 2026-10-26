@@ -1,0 +1,110 @@
+name: Release
+
+# 打 tag 即发布：构建三平台可直接运行的压缩包，并挂到 GitHub Release 上。
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '要发布的 tag，例如 v1.0.0'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 打包并发布
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 校验 tag 与版本号一致
+        run: |
+          set -euo pipefail
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          version=$(node -p "require('./package.json').version")
+          echo "tag=$tag version=$version"
+          if [ "$tag" != "v$version" ]; then
+            echo "::error::tag ($tag) 与 package.json 版本号 (v$version) 不一致"
+            exit 1
+          fi
+
+      - name: 打包
+        run: node tools/pack-release.mjs
+
+      - name: 校验产物
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          ls -la dist/*.zip
+          for p in macos windows linux web source; do
+            test -f "dist/code-icu-${version}-${p}.zip" || {
+              echo "::error::缺少 ${p} 包"
+              exit 1
+            }
+          done
+          # 解开 macos 包抽查结构：站点文件、启动脚本、说明、许可证一个都不能少
+          rm -rf /tmp/check && unzip -q "dist/code-icu-${version}-macos.zip" -d /tmp/check
+          dir=$(find /tmp/check -maxdepth 1 -mindepth 1 -type d | head -1)
+          for f in code-icu/index.html code-icu/js/main.js code-icu/manifest.webmanifest code-icu/sw.js \
+                   code-icu/icons/icon-192.png server.mjs serve.py start.command README.txt LICENSE; do
+            test -e "$dir/$f" || { echo "::error::包内缺少 $f"; exit 1; }
+          done
+          echo "包结构校验通过"
+
+      - name: 创建 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          notes=$(cat <<'EOF'
+          ## Code ICU · 代码急诊科
+
+          把 GitHub 仓库当病人做一次全身体检：算六项生命体征，给一个 0-100 的健康分，最后开一张《病危通知书》。
+
+          ### 下载
+
+          | 包 | 适用 | 怎么用 |
+          |---|---|---|
+          | `code-icu-<版本>-macos.zip` | macOS | 解压后双击 `start.command` |
+          | `code-icu-<版本>-windows.zip` | Windows | 解压后双击 `start.bat` |
+          | `code-icu-<版本>-linux.zip` | Linux | 解压后运行 `bash start.sh` |
+          | `code-icu-<版本>-web.zip` | 任意 | 纯站点文件，扔进任意静态服务器 |
+          | `code-icu-<版本>-source.zip` | 任意 | 完整源码 |
+
+          桌面包解压后双击启动脚本即可，浏览器会自动打开 `http://127.0.0.1:8765/`。
+          需要机器上有 Node.js 或 Python 3 任一即可；都没有的话直接用在线版（功能一致）：
+          <https://gztcode.github.io/code-icu/>
+
+          ### 在线版
+
+          <https://gztcode.github.io/code-icu/>
+
+          ### 校验
+
+          每个包在 Release 页面都有 SHA-256；本地可用 `shasum -a 256 <包名>` 核对。
+
+          ### 许可证
+
+          MIT。算法完全公开，欢迎查看源码复核。
+          EOF
+          )
+          gh release create "$TAG" \
+            --title "Code ICU $TAG" \
+            --notes "$notes" \
+            --verify-tag \
+            dist/*.zip \
+            dist/manifest.json

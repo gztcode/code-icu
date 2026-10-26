@@ -1,0 +1,33 @@
+{
+  "name": "code-icu",
+  "version": "1.0.0",
+  "description": "把 GitHub 仓库当成病人，读取公开数据算六项生命体征，开一张病危通知书",
+  "license": "MIT",
+  "author": "gztcode",
+  "type": "module",
+  "homepage": "https://gztcode.github.io/code-icu/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gztcode/code-icu.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gztcode/code-icu/issues"
+  },
+  "keywords": [
+    "github",
+    "health-check",
+    "static-site",
+    "pwa",
+    "open-source"
+  ],
+  "scripts": {
+    "start": "node tests/serve.mjs",
+    "icons": "node tools/make-icons.mjs",
+    "pack": "node tools/pack-release.mjs",
+    "test": "node tests/verify.mjs && node tests/young-cases.mjs && node tests/ui-check.mjs && node tests/stamp-check.mjs && node tests/token-check.mjs",
+    "test:online": "node tests/online-smoke.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
