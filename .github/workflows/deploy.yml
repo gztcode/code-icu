@@ -22,10 +22,13 @@ concurrency:
 
 jobs:
   deploy:
+    name: 部署到 Pages
+    runs-on: ubuntu-latest
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -41,3 +44,45 @@ jobs:
       - name: 发布到 GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  smoke:
+    name: 部署后冒烟
+    needs: deploy
+    runs-on: ubuntu-latest
+    # 冒烟失败不阻塞发布（Pages 已经发布成功了），只作为告警信号
+    continue-on-error: true
+    steps:
+      - name: 等待 Pages 生效
+        run: |
+          url="${{ needs.deploy.outputs.page_url }}"
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$url" || echo 000)
+            echo "尝试 $i: $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 5
+          done
+          echo "::error::Pages 未在 60 秒内返回 200"
+          exit 1
+
+      - name: 校验关键静态资源
+        run: |
+          base="${{ needs.deploy.outputs.page_url }}"
+          fail=0
+          for p in "" css/tokens.css css/app.css css/app-flow.css css/app-report.css css/app-notice.css \
+                   js/main.js js/config.js js/dom.js js/router.js js/http.js js/metrics.js js/vitals.js \
+                   js/views/home.js js/views/report.js js/views/notice.js \
+                   js/components/patient.js js/components/vital-card.js js/share/stamp.js; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$base/$p")
+            printf '%-32s %s\n' "/$p" "$code"
+            [ "$code" = "200" ] || fail=1
+          done
+          exit $fail
+
+      - name: 校验首页内容
+        run: |
+          base="${{ needs.deploy.outputs.page_url }}"
+          html=$(curl -s "$base/")
+          echo "$html" | grep -q 'Code ICU' || { echo "::error::首页缺少标题"; exit 1; }
+          echo "$html" | grep -q 'i-heart-pulse' || { echo "::error::首页缺少图标 sprite"; exit 1; }
+          echo "$html" | grep -q 'js/main.js' || { echo "::error::首页缺少入口脚本"; exit 1; }
+          echo "首页内容校验通过"

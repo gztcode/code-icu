@@ -136,9 +136,20 @@ UI 与印章测试需要 Playwright：
 npm i playwright && npx playwright install chromium
 ```
 
+线上冒烟测试直接打真实部署地址，验证部署链路本身（资源可达、路由可用、PNG 可导出、无 JS 错误）：
+
+```bash
+node tests/online-smoke.mjs https://gztcode.github.io/code-icu/
+```
+
 ## 部署
 
 推送 `main` 分支即自动部署到 GitHub Pages（见 `.github/workflows/deploy.yml`）：`src/` 目录即产物根目录，全程零构建。
+
+workflow 有两个 job：
+
+1. **部署到 Pages** —— `src/` 直接交给 `upload-pages-artifact`，无构建步骤
+2. **部署后冒烟** —— 发布后自动校验 19 个关键静态资源返回 200、首页内容完整，失败只告警不阻塞发布
 
 站点地址：<https://gztcode.github.io/code-icu/>
 
